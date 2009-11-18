@@ -34,6 +34,7 @@ sub import {
   File::Path::mkpath '_build';
   open my $fh, '>', '_build/prereqs';
   print {$fh} _data_dump(_find_prereqs());
+  # XXX eventually, copy MYMETA if exists
 }
 
 sub build {
@@ -47,7 +48,8 @@ sub test {
 }
 
 sub install {
-
+  # XXX create simple install map
+  # XXX eventually, support install base
 }
 
 sub distdir {
@@ -56,6 +58,8 @@ sub distdir {
   _spew('MANIFEST.SKIP', "#!include_default\n^"._distbase()."\n") unless -f 'MANIFEST.SKIP';
   ExtUtils::Manifest::mkmanifest();
   ExtUtils::Manifest::manicopy( ExtUtils::Manifest::maniread(), _distdir() );
+  # XXX bundle inc && add to MANIFEST in distdir
+  # XXX eventually generate META
 }
 
 sub dist {
