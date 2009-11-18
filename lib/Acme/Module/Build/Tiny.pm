@@ -51,10 +51,9 @@ sub install {
 }
 
 sub dist {
-  require ExtUtils::Manifest;
+  require ExtUtils::Manifest; ExtUtils::Manifest->VERSION(1.57);
   _spew('MANIFEST.SKIP', "#!include_default\n") unless -f 'MANIFEST.SKIP';
   ExtUtils::Manifest::mkmanifest();
-  # XXX ExtUtils::Manifest->VERSION(1.57);
 }
 
 sub clean { File::Path::rmtree($_) for qw/Build blib _build/; 1; }
