@@ -39,6 +39,7 @@ sub import {
 
 sub build {
   ExtUtils::Install::pm_to_blib({ map {$_=>"blib/$_"} _files('lib')}, 'blib/lib/auto') || 1;
+  # XXX eventually scripts/bin
 }
 
 sub test {
