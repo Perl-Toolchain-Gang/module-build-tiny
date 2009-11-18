@@ -56,7 +56,8 @@ sub dist {
   ExtUtils::Manifest::mkmanifest();
 }
 
-sub clean { File::Path::rmtree($_) for qw/Build blib _build/; 1; }
+sub clean { File::Path::rmtree('blib'); 1 }
+sub realclean { clean(); File::Path::rmtree($_) for qw/Build _build/; 1; }
 
 sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
 sub _spew { open my $fh, '>', shift; print {$fh} @_ }
