@@ -27,19 +27,19 @@ my @opts_spec = (
 );
 
 sub run {
-  my $o = eval { do '_build/build_params' } || {};
-  Getopt::Long::GetOptions($o, @opts_spec);
+  my $opt = eval { do '_build/build_params' } || {};
+  Getopt::Long::GetOptions($opt, @opts_spec);
   my $action = shift(@ARGV) || 'build';
-  __PACKAGE__->can($action)->($o) or exit 1;
+  __PACKAGE__->can($action)->(%$opt) or exit 1;
 }
 
 sub debug {
-  my $o = shift;
-  print _data_dump($o) . "\n";
+  my %opt = @_;
+  print _data_dump(\%opt) . "\n";
 }
 
 sub import {
-  Getopt::Long::GetOptions((my $o={}), @opts_spec);
+  Getopt::Long::GetOptions((my $opt={}), @opts_spec);
   my @f = _files('lib');
   print "Creating new 'Build' script for '" . _mod2dist(_path2mod($f[0])) .
         "' version '" . MM->parse_version($f[0]) . "'\n";
@@ -47,7 +47,7 @@ sub import {
   chmod 0755, 'Build';
   File::Path::mkpath '_build';
   _spew( '_build/prereqs', _data_dump(_find_prereqs()) );
-  _spew( '_build/build_params', _data_dump($o) );
+  _spew( '_build/build_params', _data_dump($opt) );
   # XXX eventually, copy MYMETA if exists
 }
 
@@ -68,10 +68,10 @@ my %install_base = ( lib => 'lib/perl5', script => 'lib/bin' );
 sub _install_base { map {$_=>"$_[0]/$install_base{$_}"} keys %install_base }
 
 sub install {
-  my $o = shift;
+  my %opt = @_;
   build();
   ExtUtils::Install::install(
-    $o{install_base} ? _install_base($o{install_base}) : \%install_map , 1
+    $opt{install_base} ? _install_base($opt{install_base}) : \%install_map , 1
   );
   return 1;
 }
