@@ -15,7 +15,7 @@ our $VERSION = '0.01';
 my %re = (
   lib => qr{\.(?:pm|pod)$},
   t => qr{\.t},
-  prereq => qr{^\s*use\s+(\S+)\s+(v?[0-9._]+)}
+  prereq => qr{^use\s+(\S+)\s+(v?[0-9._]+)}m,
 );
 
 run(@ARGV) unless caller; # modulino :-)
@@ -95,10 +95,11 @@ sub _distdir { my @f = _files('lib'); return _distbase . "-" . MM->parse_version
 sub _data_dump {
   'do{ my ' . Data::Dumper->new([shift],['x'])->Purity(1)->Dump() . '$x; }'
 }
+
 sub _find_prereqs {
   my %requires;
   for my $guts ( map { _slurp($_) } _files('lib') ) {
-    while ( $guts =~ m{$re{prereq}}msgc ) { $requires{$1}=$2; }
+    while ( $guts =~ m{$re{prereq}}g ) { $requires{$1}=$2; }
   }
   return { requires => \%requires };
 }
