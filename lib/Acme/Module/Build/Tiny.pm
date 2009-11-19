@@ -17,7 +17,7 @@ our $VERSION = '0.01';
 my %re = (
   lib => qr{\.(?:pm|pod)$},
   t => qr{\.t},
-  prereq => qr{^use\s+(\S+)\s+(v?[0-9._]+)}m,
+  prereq => qr{^\s*use\s+(\S+)\s+(v?[0-9._]+)}m,
 );
 
 run() unless caller; # modulino :-)
