@@ -27,20 +27,27 @@ my @opts_spec = (
 );
 
 sub run {
-  Getopts::Long::GetOptions(\(my %o), @opts_spec);
+  my $o = eval { do '_build/build_params' } || {};
+  Getopt::Long::GetOptions($o, @opts_spec);
   my $action = shift(@ARGV) || 'build';
-  __PACKAGE__->can($action)->(%o) or exit 1;
+  __PACKAGE__->can($action)->($o) or exit 1;
+}
+
+sub debug {
+  my $o = shift;
+  print _data_dump($o) . "\n";
 }
 
 sub import {
+  Getopt::Long::GetOptions((my $o={}), @opts_spec);
   my @f = _files('lib');
   print "Creating new 'Build' script for '" . _mod2dist(_path2mod($f[0])) .
         "' version '" . MM->parse_version($f[0]) . "'\n";
   _spew('Build' => "#!$^X\n", _slurp( $INC{_mod2pm(shift)} ) );
   chmod 0755, 'Build';
   File::Path::mkpath '_build';
-  open my $fh, '>', '_build/prereqs';
-  print {$fh} _data_dump(_find_prereqs());
+  _spew( '_build/prereqs', _data_dump(_find_prereqs()) );
+  _spew( '_build/build_params', _data_dump($o) );
   # XXX eventually, copy MYMETA if exists
 }
 
@@ -61,12 +68,10 @@ my %install_base = ( lib => 'lib/perl5', script => 'lib/bin' );
 sub _install_base { map {$_=>"$_[0]/$install_base{$_}"} keys %install_base }
 
 sub install {
-  my %opt = @_;
+  my $o = shift;
   build();
-  print "$opt{install_base}\n";
-exit 0;
   ExtUtils::Install::install(
-    $opt{install_base} ? _install_base($opt{install_base}) : \%install_map , 1
+    $o{install_base} ? _install_base($o{install_base}) : \%install_map , 1
   );
   return 1;
 }
@@ -100,19 +105,23 @@ sub realclean { clean(); File::Path::rmtree($_) for qw/Build _build/; 1; }
 
 sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
 sub _spew { open my $fh, '>', shift; print {$fh} @_ }
+sub _data_dump {
+  'do{ my ' . Data::Dumper->new([shift],['x'])->Purity(1)->Dump() . '$x; }'
+}
+
 sub _mod2pm   { (my $mod = shift) =~ s{::}{/}g; return "$mod.pm" }
 sub _path2mod { (my $pm  = shift) =~ s{/}{::}g; return substr $pm, 5, -3 }
 sub _mod2dist { (my $mod = shift) =~ s{::}{-}g; return $mod; }
+
 sub _files { my ($dir,@f) = shift;
   my $regex = $re{$dir} || qr/./;
   File::Find::find( sub { -f && /$regex/ && push @f, $File::Find::name},$dir);
   return sort { length $a <=> length $b } @f;
 }
+
 sub _distbase { my @f = _files('lib'); return _mod2dist(_path2mod($f[0])) }
+
 sub _distdir { my @f = _files('lib'); return _distbase . "-" . MM->parse_version($f[0]) }
-sub _data_dump {
-  'do{ my ' . Data::Dumper->new([shift],['x'])->Purity(1)->Dump() . '$x; }'
-}
 
 sub _find_prereqs {
   my %requires;
