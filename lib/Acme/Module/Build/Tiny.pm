@@ -20,7 +20,9 @@ my %re = (
   prereq => qr{^\s*use\s+(\S+)\s+(v?[0-9._]+)}m,
 );
 
-run() unless caller; # modulino :-)
+my %install_map = map { +"blib/$_"  => $Config{"installsite$_"} } qw/lib script/;
+
+my %install_base = ( lib => [qw/lib perl5/], script => [qw/lib bin/] );
 
 my @opts_spec = (
     'install_base:s','uninst:i'
@@ -62,16 +64,15 @@ sub test {
   Test::Harness::runtests(_files('t'));
 }
 
-my %install_map = map { "blib/$_"  => $Config{"installsite$_"} }, qw/lib script/;
-my %install_base = ( lib => 'lib/perl5', script => 'lib/bin' );
-
-sub _install_base { map {$_=>"$_[0]/$install_base{$_}"} keys %install_base }
+sub _install_base {
+  my $map = {map {$_=>File::Spec->catdir($_[0],@{$install_base{$_}})} keys %install_base};
+}
 
 sub install {
   my %opt = @_;
   build();
   ExtUtils::Install::install(
-    $opt{install_base} ? _install_base($opt{install_base}) : \%install_map , 1
+    ($opt{install_base} ? _install_base($opt{install_base}) : \%install_map), 1
   );
   return 1;
 }
@@ -130,6 +131,8 @@ sub _find_prereqs {
   }
   return { requires => \%requires };
 }
+
+run() unless caller; # modulino :-)
 
 1;
 
