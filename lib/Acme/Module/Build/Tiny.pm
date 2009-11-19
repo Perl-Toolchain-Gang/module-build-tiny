@@ -1,6 +1,7 @@
 package Acme::Module::Build::Tiny;
 use strict;
 use warnings;
+use Config;
 use Data::Dumper 0 ();
 use ExtUtils::Install 0 ();
 use ExtUtils::MakeMaker 0 ();
@@ -8,6 +9,7 @@ use File::Copy 0 ();
 use File::Find 0 ();
 use File::Path 0 ();
 use File::Spec 0 ();
+use Getopt::Long 0 ();
 use Test::Harness 0 ();
 use Tie::File 0 ();
 our $VERSION = '0.01';
@@ -18,11 +20,16 @@ my %re = (
   prereq => qr{^use\s+(\S+)\s+(v?[0-9._]+)}m,
 );
 
-run(@ARGV) unless caller; # modulino :-)
+run() unless caller; # modulino :-)
+
+my @opts_spec = (
+    'install_base:s','uninst:i'
+);
 
 sub run {
-  my $action = shift || 'build';
-  __PACKAGE__->$action() or exit 1;
+  Getopts::Long::GetOptions(\(my %o), @opts_spec);
+  my $action = shift(@ARGV) || 'build';
+  __PACKAGE__->can($action)->(%o) or exit 1;
 }
 
 sub import {
@@ -48,9 +55,20 @@ sub test {
   Test::Harness::runtests(_files('t'));
 }
 
+my %install_map = map { "blib/$_"  => $Config{"installsite$_"} }, qw/lib script/;
+my %install_base = ( lib => 'lib/perl5', script => 'lib/bin' );
+
+sub _install_base { map {$_=>"$_[0]/$install_base{$_}"} keys %install_base }
+
 sub install {
-  # XXX create simple install map
-  # XXX eventually, support install base
+  my %opt = @_;
+  build();
+  print "$opt{install_base}\n";
+exit 0;
+  ExtUtils::Install::install(
+    $opt{install_base} ? _install_base($opt{install_base}) : \%install_map , 1
+  );
+  return 1;
 }
 
 sub distdir {
