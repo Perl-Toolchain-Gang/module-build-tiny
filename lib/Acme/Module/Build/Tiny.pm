@@ -5,7 +5,6 @@ use Config;
 use Data::Dumper 0 ();
 use ExtUtils::Install 0 ();
 use ExtUtils::MakeMaker 0 ();
-use File::Copy 0 ();
 use File::Find 0 ();
 use File::Path 0 ();
 use File::Spec 0 ();
@@ -47,7 +46,6 @@ sub import {
         "' version '" . MM->parse_version($f[0]) . "'\n";
   _spew('Build' => "#!$^X\n", _slurp( $INC{_mod2pm(shift)} ) );
   chmod 0755, 'Build';
-  File::Path::mkpath '_build';
   _spew( '_build/prereqs', _data_dump(_find_prereqs()) );
   _spew( '_build/build_params', _data_dump($opt) );
   # XXX eventually, copy MYMETA if exists
@@ -84,9 +82,11 @@ sub distdir {
   require ExtUtils::Manifest; ExtUtils::Manifest->VERSION(1.57);
   File::Path::rmtree(_distdir());
   _spew('MANIFEST.SKIP', "#!include_default\n^"._distbase()."\n") unless -f 'MANIFEST.SKIP';
+  local $ExtUtils::Manifest::Quiet = 1;
   ExtUtils::Manifest::mkmanifest();
   ExtUtils::Manifest::manicopy( ExtUtils::Manifest::maniread(), _distdir() );
-  # XXX bundle inc && add to MANIFEST in distdir
+  _spew(_distdir("/inc/",_mod2pm(__PACKAGE__)) => _slurp( __FILE__ ) );
+  _append(_distdir("MANIFEST"), "inc/" . _mod2pm(__PACKAGE__) . "\n");
   # XXX eventually generate META
 }
 
@@ -105,10 +105,17 @@ sub dist {
 
 sub clean { File::Path::rmtree('blib'); 1 }
 
-sub realclean { clean(); File::Path::rmtree($_) for qw/Build _build/; 1; }
+sub realclean { clean(); File::Path::rmtree($_) for _distdir(), qw/Build _build/; 1; }
 
 sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
-sub _spew { open my $fh, '>', shift; print {$fh} @_ }
+sub _spew {
+  my $file = shift;
+  File::Path::mkpath(File::Basename::dirname($file));
+  open my $fh, '>', $file;
+  print {$fh} @_;
+}
+sub _append { open my $fh, ">>", shift; print {$fh} @_ }
+
 sub _data_dump {
   'do{ my ' . Data::Dumper->new([shift],['x'])->Purity(1)->Dump() . '$x; }'
 }
@@ -125,7 +132,10 @@ sub _files { my ($dir,@f) = shift;
 
 sub _distbase { my @f = _files('lib'); return _mod2dist(_path2mod($f[0])) }
 
-sub _distdir { my @f = _files('lib'); return _distbase . "-" . MM->parse_version($f[0]) }
+sub _distdir {
+  my @f = _files('lib');
+  return File::Spec->catfile(_distbase ."-". MM->parse_version($f[0]), @_);
+}
 
 sub _find_prereqs {
   my %requires;
