@@ -169,7 +169,19 @@ Acme::Module::Build::Tiny - A tiny replacement for Module::Build
 
 =head2 Supported
 
+  * Pure purl distributions
+  * Executables in bin/
+
 =head2 Not Supported
+
+  * Building XS or C
+  * Manpage or HTML documentation generation
+  * Subclassing Acme::Module::Build::Tiny
+
+=head1 USAGE
+
+=head2 Automatic prequisite detection
+
 
 =head1 SEE ALSO
 
