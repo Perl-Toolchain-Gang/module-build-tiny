@@ -136,4 +136,43 @@ run() unless caller; # modulino :-)
 
 1;
 
+__END__
+
+=head1 NAME
+
+Acme::Module::Build::Tiny - A tiny replacement for Module::Build
+
+=head1 SYNOPSIS
+
+  # From the command line, run this:
+  $ btiny
+
+  # Which generates this Build.PL:
+  use inc; use Acme::Module::Build::Tiny;
+
+  # That's it!
+
+=head1 DESCRIPTION
+
+=head2 Supported
+
+=head2 Not Supported
+
+=head1 SEE ALSO
+
+L<Module::Build>
+
+=head1 AUTHOR
+
+  David Golden <dagolden@cpan.org>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2009 by David A. Golden
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.10.0 or,
+at your option, any later version of Perl 5 you may have available.
+
+=cut
 # vi:et:sts=2:sw=2:ts=2
