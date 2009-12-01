@@ -1,0 +1,14 @@
+Must:
+* auto inc/ bundling
+* btiny script
+* build requires
+* create README
+* create LICENSE
+* generate META
+* copy META to MYMETA
+* write docs
+* write tests
+
+Maybe:
+* installsite and installpath
+* sharedir
