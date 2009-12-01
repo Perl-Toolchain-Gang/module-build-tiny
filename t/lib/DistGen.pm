@@ -7,16 +7,16 @@ use vars qw( $VERSION $VERBOSE @EXPORT_OK);
 our $VERSION = '0.01';
 our $VERBOSE = 0;
 
-use Carp;
+use Carp 0;
 
-use Cwd ();
-use File::Basename ();
-use File::Find ();
-use File::Path ();
-use File::Spec ();
-use File::Temp ();
-use IO::File ();
-use Data::Dumper ();
+use Cwd 0 ();
+use File::Basename 0 ();
+use File::Find 0 ();
+use File::Path 0 ();
+use File::Spec 0 ();
+use File::Temp 0 ();
+use IO::File 0 ();
+use Data::Dumper 0 ();
 
 BEGIN {
   require Exporter;
@@ -57,9 +57,9 @@ sub reset {
   my %options = @_;
 
   $options{name} ||= 'Simple';
-  $options{dir} ||= File::Temp::tempdir( 
+  $options{dir} ||= File::Temp::tempdir(
     DIR => File::Spec->tmpdir, CLEANUP => 1
-  ); 
+  );
 
   my %data = (
     no_manifest   => 0,
