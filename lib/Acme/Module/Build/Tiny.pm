@@ -138,11 +138,14 @@ sub _distdir {
 }
 
 sub _find_prereqs {
-  my %requires;
+  my (%requires, %build_requires);
   for my $guts ( map { _slurp($_) } _files('lib') ) {
     while ( $guts =~ m{$re{prereq}}g ) { $requires{$1}=$2; }
   }
-  return { requires => \%requires };
+  for my $guts ( map { _slurp($_) } _files('t') ) {
+    while ( $guts =~ m{$re{prereq}}g ) { $build_requires{$1}=$2; }
+  }
+  return { requires => \%requires, build_requires => \%build_requires };
 }
 
 run() unless caller; # modulino :-)
