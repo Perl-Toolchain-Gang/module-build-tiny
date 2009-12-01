@@ -171,11 +171,22 @@ Acme::Module::Build::Tiny - A tiny replacement for Module::Build
 
 =head1 DESCRIPTION
 
+Many Perl distributions use a Build.PL file instead of a Makefile.PL file
+to drive distribution configuration, build, test and installation.
+Traditionally, Build.PL uses Module::Build as the underlying build system.
+This module provides a simple, lightweight, drop-in replacement.
+
+Whereas Module::Build has over 6,700 lines of code; this module has under
+200, yet supports the features needed by most pure-Perl distributions along
+with some useful automation for lazy programmers.  Plus, it bundles itself
+with the distribution, so end users don't even need to have it (or
+Module::Build) installed.
+
 =head2 Supported
 
   * Pure purl distributions
   * Recursive test files
-  * Automatic 'requires' and 'build_requires' detection (see Usage)
+  * Automatic 'requires' and 'build_requires' detection (see below)
   * Automatic MANIFEST generation
   * Automatic MANIFEST.SKIP generation (if not supplied)
   * Automatically bundles itself in inc/
@@ -190,8 +201,7 @@ Acme::Module::Build::Tiny - A tiny replacement for Module::Build
 =head2 Other limitations
 
   * May only work on a Unix-like or Windows OS
-
-=head1 USAGE
+  * This is an Acme module -- use at your own risk
 
 =head2 Directory structure
 
@@ -215,6 +225,28 @@ are detected.
 Prerequisites of type 'build_requires' are automatically detected in a
 similar fashion from any *.t files (recusively) in F<t/> and from any
 *.pm files in F<t/lib/>.
+
+=head1 USAGE
+
+=head2 perl Build.PL
+
+=head2 Build
+
+=head2 Build test
+
+=head2 Build install
+
+=head2 Build clean
+
+=head2 Build realclean
+
+=head2 Build distdir
+
+=head2 Build dist
+
+=head1 CONFIG FILE AND ENVIRONMENT
+
+Not yet supported.
 
 =head1 SEE ALSO
 
