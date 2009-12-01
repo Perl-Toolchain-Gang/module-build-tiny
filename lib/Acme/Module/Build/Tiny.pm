@@ -14,9 +14,10 @@ use Tie::File 0 ();
 our $VERSION = '0.01';
 
 my %re = (
-  lib => qr{\.(?:pm|pod)$},
-  t => qr{\.t},
-  prereq => qr{^\s*use\s+(\S+)\s+(v?[0-9._]+)}m,
+  lib     => qr{\.(?:pm|pod)$},
+  t       => qr{\.t},
+  't/lib' => qr{\.(?:pm|pod)$},
+  prereq  => qr{^\s*use[ \t]+(\S+)[ \t]+(v?[0-9._]+)[^;]*;}m,
 );
 
 my %install_map = map { +"blib/$_"  => $Config{"installsite$_"} } qw/lib script/;
@@ -142,7 +143,7 @@ sub _find_prereqs {
   for my $guts ( map { _slurp($_) } _files('lib') ) {
     while ( $guts =~ m{$re{prereq}}g ) { $requires{$1}=$2; }
   }
-  for my $guts ( map { _slurp($_) } _files('t') ) {
+  for my $guts ( map { _slurp($_) } _files('t'), _files('t/lib') ) {
     while ( $guts =~ m{$re{prereq}}g ) { $build_requires{$1}=$2; }
   }
   return { requires => \%requires, build_requires => \%build_requires };
