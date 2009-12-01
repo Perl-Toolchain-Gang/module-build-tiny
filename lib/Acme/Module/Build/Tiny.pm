@@ -174,18 +174,47 @@ Acme::Module::Build::Tiny - A tiny replacement for Module::Build
 =head2 Supported
 
   * Pure purl distributions
-  * Executables in bin/
+  * Recursive test files
+  * Automatic 'requires' and 'build_requires' detection (see Usage)
+  * Automatic MANIFEST generation
+  * Automatic MANIFEST.SKIP generation (if not supplied)
+  * Automatically bundles itself in inc/
 
 =head2 Not Supported
 
+  * Generated code from PL files
   * Building XS or C
   * Manpage or HTML documentation generation
   * Subclassing Acme::Module::Build::Tiny
 
+=head2 Other limitations
+
+  * May only work on a Unix-like or Windows OS
+
 =head1 USAGE
+
+=head2 Directory structure
+
+Your .pm and .pod files must be in F<lib/>.  Any executables must be in
+F<bin/>.  Test files must be in F<t/>.  Bundled test modules must be in
+F<t/lib/>.
 
 =head2 Automatic prequisite detection
 
+Prerequisites of type 'requires' are automatically detected in *.pm files
+in F<lib/> from lines that contain a C<use()> function with a version
+number.  E.g.:
+
+  use Carp 0 qw/carp croak/;
+  use File::Spec 0.86 ();
+
+Lines may have leading white space.  You may not have more than one
+C<use()> function per line.  No other C<use()> or C<require()> functions
+are detected.
+
+Prerequisites of type 'build_requires' are automatically detected in a
+similar fashion from any *.t files (recusively) in F<t/> and from any
+*.pm files in F<t/lib/>.
 
 =head1 SEE ALSO
 
