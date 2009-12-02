@@ -1,4 +1,5 @@
 Must:
+* get 'requires' from bin/
 * generate META
 * copy META to MYMETA
 * write docs
