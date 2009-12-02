@@ -1,5 +1,8 @@
 Must:
 * get 'requires' from bin/
+* test exit code from failing test
+* test _prereq
+* test _build_params
 * generate META
 * copy META to MYMETA
 * write docs
