@@ -1,3 +1,4 @@
+#!perl
 use strict;
 use warnings;
 use File::pushd 1.00 qw(tempd);

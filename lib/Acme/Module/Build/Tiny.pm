@@ -57,7 +57,9 @@ sub build {
     (map {$_=>"blib/$_"} _files('lib')),
     (map {;"bin/$_"=>"blib/script/$_"} map {s{^bin/}{}; $_} _files('bin')),
   };
-  ExtUtils::Install::pm_to_blib($map, 'blib/lib/auto') || 1;
+  ExtUtils::Install::pm_to_blib($map, 'blib/lib/auto');
+  ExtUtils::MM->fixin($_), chmod(0555, $_) for _files('blib/script');
+  return 1;
 }
 
 sub test {
