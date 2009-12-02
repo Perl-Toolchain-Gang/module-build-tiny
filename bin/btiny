@@ -2,4 +2,4 @@ use 5.006;
 use strict;
 use warnings;
 open my $fh, ">", "Build.PL";
-print {$fh} "use inc; use Acme::Module::Build::Tiny;\n";
+print {$fh} "use lib 'inc'; use Acme::Module::Build::Tiny;\n";

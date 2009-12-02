@@ -125,7 +125,9 @@ sub _mod2pm   { (my $mod = shift) =~ s{::}{/}g; return "$mod.pm" }
 sub _path2mod { (my $pm  = shift) =~ s{/}{::}g; return substr $pm, 5, -3 }
 sub _mod2dist { (my $mod = shift) =~ s{::}{-}g; return $mod; }
 
-sub _files { my ($dir,@f) = shift;
+sub _files {
+  my ($dir,@f) = shift;
+  return unless -d $dir;
   my $regex = $re{$dir} || qr/./;
   File::Find::find( sub { -f && /$regex/ && push @f, $File::Find::name},$dir);
   return sort { length $a <=> length $b } @f;

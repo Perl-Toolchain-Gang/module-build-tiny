@@ -62,9 +62,6 @@ sub reset {
   );
 
   my %data = (
-    no_manifest   => 0,
-    xs            => 0,
-    inc           => 0,
     %options,
   );
   %$self = %data;
@@ -117,9 +114,8 @@ sub _gen_default_filedata {
   };
 
   $self->$add_unless('Build.PL', undent(<<"      ---"));
-      use inc::Acme::Module::Build::Tiny;
+      use lib 'inc'; use Acme::Module::Build::Tiny;
       ---
-  }
 
   my $module_filename =
     join( '/', ('lib', split(/::/, $self->{name})) ) . '.pm';
@@ -131,6 +127,8 @@ sub _gen_default_filedata {
       \$VERSION = '0.01';
 
       use strict;
+
+      use Carp 0 ();
 
       1;
 
@@ -152,30 +150,13 @@ sub _gen_default_filedata {
       ---
 
   $self->$add_unless('t/basic.t', undent(<<"    ---"));
-    use Test::More tests => 1;
+    use Test::More 0.23 tests => 1;
     use strict;
 
     use $self->{name};
     ok 1;
     ---
 
-}
-
-sub _gen_manifest {
-  my $self     = shift;
-  my $manifest = shift;
-
-  my $fh = IO::File->new( ">$manifest" ) or do {
-    die "Can't write '$manifest'\n";
-  };
-
-  my @files = ( 'MANIFEST', keys %{$self->{filedata}} );
-  my $data = join( "\n", sort @files ) . "\n";
-  print $fh $data;
-  close( $fh );
-
-  $self->{filedata}{MANIFEST} = $data;
-  $self->{pending}{change}{MANIFEST} = 1;
 }
 
 sub name { shift()->{name} }
@@ -246,13 +227,6 @@ sub regen {
     delete( $self->{pending}{change}{$file} );
   }
 
-  my $manifest = File::Spec->catfile( $dist_dirname, 'MANIFEST' );
-  unless ( $self->{no_manifest} ) {
-    if ( -e $manifest ) {
-      1 while unlink( $manifest );
-    }
-    $self->_gen_manifest( $manifest );
-  }
   return $self;
 }
 
@@ -271,7 +245,6 @@ sub clean {
   my %names;
   foreach my $file ( keys %{$self->{filedata}} ) {
     my $filename = $self->_real_filename( $file );
-    $filename = lc($filename) if $vms_lower_case;
     my $dirname = File::Basename::dirname( $filename );
 
     $names{$filename} = 0;
@@ -293,18 +266,12 @@ sub clean {
   File::Find::finddepth( sub {
     my $name = File::Spec->canonpath( $File::Find::name );
 
-    if ($vms_mode) {
-        if ($name ne '.') {
-            $name =~ s/\.\z//;
-            $name = vmspath($name) if -d $name;
-        }
-    }
-
     if ( not exists $names{$name} ) {
       print "Removing '$name'\n" if $VERBOSE;
       File::Path::rmtree( $_ );
     }
-  }, File::Spec->curdir) );
+  }, File::Spec->curdir );
+
 
   chdir_all( $here );
   return $self;
@@ -392,12 +359,8 @@ DistGen - Creates simple distributions for testing.
   $dist->revert;
   $dist->clean;
 
-  # exercise the command-line interface
-  $dist->run_build_pl();
-  $dist->run_build('test');
-
   # start over as a new distribution
-  $dist->reset( name => 'Foo::Bar', xs => 1 );
+  $dist->reset( name => 'Foo::Bar' );
   $dist->chdir_in;
 
 =head1 USAGE
@@ -431,11 +394,6 @@ most important is the one to enter the distribution directory:
 
   chdir_in
 
-Additional methods portably encapsulate running Build.PL and Build:
-
-  run_build_pl
-  run_build
-
 =head1 API
 
 =head2 Constructors
@@ -451,8 +409,6 @@ The C<new> method does not write any files -- see L</regen()> below.
   my $dist = DistGen->new(
     name        => 'Foo::Bar',
     dir         => MBTest->tmpdir,
-    xs          => 1,
-    no_manifest => 0,
   );
 
 The parameters are as follows.
@@ -476,14 +432,6 @@ distribution will be created under this according to the "dist" form of C<name>
 
   # distribution files have been created in /tmp/MB-test/Simple
 
-=item xs
-
-If true, generates an XS based module.
-
-=item no_manifest
-
-If true, C<regen()> will not create a MANIFEST file.
-
 =back
 
 The following files are added as part of the default distribution:
@@ -491,14 +439,6 @@ The following files are added as part of the default distribution:
   Build.PL
   lib/Simple.pm # based on name parameter
   t/basic.t
-
-If an XS module is generated, Simple.pm and basic.t are different and
-the following files are also added:
-
-  typemap
-  lib/Simple.xs # based on name parameter
-
-=head3 reset()
 
 The C<reset> method re-initializes the object as if it were generated
 from a fresh call to C<new>.  It takes the same optional parameters as C<new>.
@@ -617,20 +557,6 @@ These use Module::Build->run_perl_script() to ensure that Build.PL or Build are
 run in a separate process using the current perl interpreter.  (Module::Build
 is loaded on demand).  They also ensure appropriate naming for operating
 systems that require a suffix for Build.
-
-=head3 run_build_pl
-
-Runs Build.PL using the current perl interpreter.  Any arguments are
-passed on the command line.
-
-  $dist->run_build_pl('--quiet');
-
-=head3 run_build
-
-Runs Build using the current perl interpreter.  Any arguments are
-passed on the command line.
-
-  $dist->run_build(qw/test --verbose/);
 
 =head2 Properties
 
