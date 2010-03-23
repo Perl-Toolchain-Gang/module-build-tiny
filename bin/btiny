@@ -2,5 +2,6 @@
 use 5.006;
 use strict;
 use warnings;
-open my $fh, ">", "Build.PL";
+use IO::File 1.00 ();
+my $fh = IO::File->new("Build.PL", "w");
 print {$fh} "use lib 'inc'; use Acme::Module::Build::Tiny;\n";

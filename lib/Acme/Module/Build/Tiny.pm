@@ -144,7 +144,7 @@ sub _distdir {
 
 sub _find_prereqs {
   my (%requires, %build_requires);
-  for my $guts ( map { _slurp($_) } _files('lib') ) {
+  for my $guts ( map { _slurp($_) } _files('lib'), _files('bin') ) {
     while ( $guts =~ m{$re{prereq}}g ) { $requires{$1}=$2; }
   }
   for my $guts ( map { _slurp($_) } _files('t'), _files('t/lib') ) {
