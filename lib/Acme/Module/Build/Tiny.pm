@@ -55,7 +55,7 @@ sub import {
   _spew( '_build/prereqs', _data_dump(_find_prereqs()) );
   _spew( '_build/build_params', _data_dump($opt) );
   _spew( '_build/meta', _data_dump(_fill_meta($meta, $f[0])) );
-  # XXX eventually, copy MYMETA if exists
+  _spew( 'MYMETA.yml', _slurp('META.yml')) if -f 'META.yml';
 }
 
 sub build {
