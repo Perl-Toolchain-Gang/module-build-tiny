@@ -12,7 +12,7 @@ use Getopt::Long 0 ();
 use Test::Harness 0 ();
 use Tie::File 0 ();
 use Text::ParseWords 0 ();
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 my %re = (
   lib     => qr{\.(?:pm|pod)$},
