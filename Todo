@@ -1,14 +1,14 @@
 Must:
-* get 'requires' from bin/
+* add authors to generated META
+* copy META to MYMETA
 * test exit code from failing test
 * test _prereq
 * test _build_params
-* generate META
-* copy META to MYMETA
 * write docs
 * write tests
 
 Maybe:
+* support alternate licenses as params to import()
 * create README
 * create LICENSE
 * installsite and installpath

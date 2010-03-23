@@ -43,12 +43,17 @@ sub debug {
 sub import {
   Getopt::Long::GetOptions((my $opt={}), @opts_spec);
   my @f = _files('lib');
-  print "Creating new 'Build' script for '" . _mod2dist(_path2mod($f[0])) .
-        "' version '" . MM->parse_version($f[0]) . "'\n";
+  my $meta = {
+    name     => _mod2dist(_path2mod($f[0])),
+    version  => MM->parse_version($f[0]),
+  };
+  print "Creating new 'Build' script for '$meta->{name}'" .
+        " version '$meta->{version}'\n";
   _spew('Build' => "#!$^X\n", _slurp( $INC{_mod2pm(shift)} ) );
   chmod 0755, 'Build';
   _spew( '_build/prereqs', _data_dump(_find_prereqs()) );
   _spew( '_build/build_params', _data_dump($opt) );
+  _spew( '_build/meta', _data_dump(_fill_meta($meta, $f[0])) );
   # XXX eventually, copy MYMETA if exists
 }
 
@@ -90,7 +95,8 @@ sub distdir {
   ExtUtils::Manifest::manicopy( ExtUtils::Manifest::maniread(), _distdir() );
   _spew(_distdir("/inc/",_mod2pm(__PACKAGE__)) => _slurp( __FILE__ ) );
   _append(_distdir("MANIFEST"), "inc/" . _mod2pm(__PACKAGE__) . "\n");
-  # XXX eventually generate META
+  _write_meta(_distdir("META.yml")); 
+  _append(_distdir("MANIFEST"), "META.yml");
 }
 
 sub dist {
@@ -140,6 +146,26 @@ sub _distbase { my @f = _files('lib'); return _mod2dist(_path2mod($f[0])) }
 sub _distdir {
   my @f = _files('lib');
   return File::Spec->catfile(_distbase ."-". MM->parse_version($f[0]), @_);
+}
+
+sub _fill_meta {
+  my ($m, $src) = @_;
+  for ( split /\n/, _slurp($src) ) {
+    next unless /^=(?!cut)/ .. /^=cut/;  # in POD
+    ($m->{abstract}) = /^  (?:  [a-z:]+  \s+ - \s+  )  (.*\S)  /ix
+      unless $m->{abstract};
+  }
+  return $m;
+}
+
+sub _write_meta {
+  my $file = shift; 
+  my $meta = eval { do '_build/meta' } || {};
+  $meta->{generated_by} = sprintf("%s version %s", __PACKAGE__, $VERSION);
+  $meta->{'meta-spec'} = { version => 1.4, url => 'http://module-build.sourceforge.net/META-spec-v1.4.html' };
+  $meta->{'license'} = 'perl';
+  require Module::Build::YAML;
+  Module::Build::YAML::DumpFile($file,$meta);
 }
 
 sub _find_prereqs {
