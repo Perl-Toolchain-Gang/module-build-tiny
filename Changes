@@ -1,4 +1,11 @@
 Revision history for Acme::Module::Build::Tiny
 
-0.01  Under development
+0.02 - Tue Mar 23 15:20:19 EDT 2010
+
+  - Add support for .modulebuildrc and PERL_MB_OPT so it works
+    with local::lib
+  
+0.01  - Tue Mar 23 14:21:29 EDT 2010
+
+  - First release
 

@@ -11,6 +11,7 @@ use File::Spec 0 ();
 use Getopt::Long 0 ();
 use Test::Harness 0 ();
 use Tie::File 0 ();
+use Text::ParseWords 0 ();
 our $VERSION = '0.01';
 
 my %re = (
@@ -25,14 +26,43 @@ my %install_map = map { +"blib/$_"  => $Config{"installsite$_"} } qw/lib script/
 
 my %install_base = ( lib => [qw/lib perl5/], script => [qw/lib bin/] );
 
-my @opts_spec = (
-    'install_base:s','uninst:i'
-);
+my @opts_spec = ( 'install_base:s', 'uninst:i' );
+
+sub _split_like_shell {
+  my $string = shift;
+  $string =~ s/^\s+|\s+$//g;
+  return Text::ParseWords::shellwords($string);
+}
+
+sub _home { return $ENV{HOME} || $ENV{USERPROFILE} }
+
+sub _default_rc { return File::Spec->catfile( _home(), '.modulebuildrc' ) }
+
+sub _get_rc_opts { 
+  my $rc_file = ($ENV{MODULEBUILDRC} || _default_rc());
+  return {} unless -f $rc_file;
+  my $guts = _slurp( $rc_file );
+  $guts =~ s{\n[ \t]+}{ }mg; # join lines with leading whitespace
+  $guts =~ s{^#.*$}{}mg; # strip comments
+  $guts =~ s{\n\s*\n}{\n}mg; # empty lines
+  my %opt = map  { my ($k,$v) = $_ =~ /(\S+)\s+(.*)/; $k => $v } 
+            grep { /\S/ } split /\n/, $guts;
+  return \%opt;
+}
+
+sub _get_options {
+  my ($action,$opt) = @_;
+  my $rc_opts = _get_rc_opts;
+  for my $s ( $ENV{PERL_MB_OPT}, $rc_opts->{$action}, $rc_opts->{'*'} ) {
+    unshift @ARGV, _split_like_shell($s) if defined $s && length $s;
+  }
+  Getopt::Long::GetOptions($opt, @opts_spec);
+}
 
 sub run {
   my $opt = eval { do '_build/build_params' } || {};
-  Getopt::Long::GetOptions($opt, @opts_spec);
-  my $action = shift(@ARGV) || 'build';
+  my $action = $ARGV[0] =~ /\A\w+\z/ ? $ARGV[0] : 'build';
+  _get_options($action, $opt);
   __PACKAGE__->can($action)->(%$opt) or exit 1;
 }
 
@@ -42,7 +72,7 @@ sub debug {
 }
 
 sub import {
-  Getopt::Long::GetOptions((my $opt={}), @opts_spec);
+  _get_options('Build_PL', my $opt = {});
   my @f = _files('lib');
   my $meta = {
     name     => _mod2dist(_path2mod($f[0])),
@@ -224,12 +254,13 @@ Module::Build) installed.
 
 =head2 Supported
 
-  * Pure purl distributions
+  * Pure Perl distributions
   * Recursive test files
   * Automatic 'requires' and 'build_requires' detection (see below)
   * Automatic MANIFEST generation
   * Automatic MANIFEST.SKIP generation (if not supplied)
   * Automatically bundles itself in inc/
+  * MYMETA
 
 =head2 Not Supported
 
@@ -303,7 +334,8 @@ uninst
 
 =head1 CONFIG FILE AND ENVIRONMENT
 
-Not yet supported.
+Options can be provided in a F<.modulebuildrc> file or in the C<PERL_MB_OPT>
+environment variable the same way they can with Module::Build.
 
 =head1 SEE ALSO
 
