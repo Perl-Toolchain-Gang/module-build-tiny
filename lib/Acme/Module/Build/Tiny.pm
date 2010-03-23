@@ -18,6 +18,7 @@ my %re = (
   t       => qr{\.t},
   't/lib' => qr{\.(?:pm|pod)$},
   prereq  => qr{^\s*use[ \t]+(\S+)[ \t]+(v?[0-9._]+)[^;]*;}m,
+  authors => qr{^=head1 AUTHORS?\s*\n(.*?)^=\w}sm,
 );
 
 my %install_map = map { +"blib/$_"  => $Config{"installsite$_"} } qw/lib script/;
@@ -155,7 +156,14 @@ sub _fill_meta {
     ($m->{abstract}) = /^  (?:  [a-z:]+  \s+ - \s+  )  (.*\S)  /ix
       unless $m->{abstract};
   }
+  $m->{author} = _find_authors($src);
   return $m;
+}
+
+sub _find_authors {
+  my $guts = _slurp($_[0]);
+  my ($block) = $guts =~ $re{authors};
+  return $block ? [ map { s{^\s+}{}; s{\s+$}{}; $_ } grep { /\S/ } split /\n/, $block ] : [];
 }
 
 sub _write_meta {
@@ -223,10 +231,12 @@ Module::Build) installed.
 
 =head2 Not Supported
 
+  * Dynamic prerequisites
   * Generated code from PL files
   * Building XS or C
   * Manpage or HTML documentation generation
   * Subclassing Acme::Module::Build::Tiny
+  * Licenses other than 'perl'
 
 =head2 Other limitations
 

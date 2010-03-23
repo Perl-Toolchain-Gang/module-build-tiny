@@ -1,5 +1,4 @@
 Must:
-* add authors to generated META
 * copy META to MYMETA
 * test exit code from failing test
 * test _prereq
