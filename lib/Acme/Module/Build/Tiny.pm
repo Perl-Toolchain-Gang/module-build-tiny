@@ -169,6 +169,8 @@ sub _find_authors {
 sub _write_meta {
   my $file = shift; 
   my $meta = eval { do '_build/meta' } || {};
+  my $prereqs = eval { do '_build/prereqs' } || {};
+  $meta->{$_} = $prereqs->{$_} for keys %$prereqs;
   $meta->{generated_by} = sprintf("%s version %s", __PACKAGE__, $VERSION);
   $meta->{'meta-spec'} = { version => 1.4, url => 'http://module-build.sourceforge.net/META-spec-v1.4.html' };
   $meta->{'license'} = 'perl';

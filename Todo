@@ -1,5 +1,4 @@
 Must:
-* add prereqs to META.yml
 * test exit code from failing test
 * test _prereq
 * test _build_params
