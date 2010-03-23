@@ -238,7 +238,7 @@ Module::Build) installed.
   * Building XS or C
   * Manpage or HTML documentation generation
   * Subclassing Acme::Module::Build::Tiny
-  * Licenses other than 'perl'
+  * Licenses in META.yml other than 'perl'
 
 =head2 Other limitations
 
@@ -269,6 +269,21 @@ similar fashion from any *.t files (recusively) in F<t/> and from any
 *.pm files in F<t/lib/>.
 
 =head1 USAGE
+
+These all work pretty much like their Module::Build equivalents.  The
+only configuration options currently supported are:
+
+=over
+
+=item *
+
+install_base
+
+=item *
+
+uninst
+
+=back
 
 =head2 perl Build.PL
 
