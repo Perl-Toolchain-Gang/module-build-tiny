@@ -231,11 +231,13 @@ Acme::Module::Build::Tiny - A tiny replacement for Module::Build
 
 =head1 SYNOPSIS
 
+  # First, install Acme::Module::Build::Tiny
+
   # From the command line, run this:
   $ btiny
 
   # Which generates this Build.PL:
-  use inc; use Acme::Module::Build::Tiny;
+  use lib 'inc'; use Acme::Module::Build::Tiny;
 
   # That's it!
 
