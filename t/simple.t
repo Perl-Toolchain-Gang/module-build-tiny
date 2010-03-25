@@ -1,5 +1,6 @@
 use strict;
 use warnings;
+use Config;
 use File::pushd 1.00 qw(tempd);
 use File::Spec 0 ();
 use Capture::Tiny 0 qw(capture);
@@ -22,6 +23,9 @@ $dist->add_file('bin/simple', undent(<<"    ---"));
     ---
 $dist->regen;
 
+my $interpreter = ($Config{startperl} eq $^X )
+                ? qr/#!\Q$^X\E/
+                : qr/(?:#!\Q$^X\E|\Q$Config{startperl}\E)/;
 my ($guts, $ec);
 
 sub _mod2pm   { (my $mod = shift) =~ s{::}{/}g; return "$mod.pm" }
@@ -40,7 +44,7 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
   open my $fh, "<", "Build";
   my $line = <$fh>;
 
-  like( $line, qr/\A#!\Q$^X\E/, "Build has shebang line with \$^X" );
+  like( $line, qr{\A$interpreter}, "Build has shebang line with \$^X" );
   ok( -f '_build/prereqs', "_build/prereqs created" );
   ok( -f '_build/build_params', "_build/build_params created" );
 }
@@ -69,7 +73,7 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
   ok( -x "blib/script/simple", "blib/script/simple is executable" );
   open my $fh, "<", "blib/script/simple";
   my $line = <$fh>;
-  like( $line, qr/\A#!\Q$^X\E/, "blib/script/simple has shebang line with \$^X" );
+  like( $line, qr{\A$interpreter}, "blib/script/simple has shebang line with \$^X" );
 
 }
 

@@ -1,7 +1,8 @@
 Revision history for Acme::Module::Build::Tiny
 
-0.04
+0.04 - Wed Mar 24 22:59:50 EDT 2010
 
+  - Fix test bug when running a versioned perl (e.g. perl5.10.1)
 
 0.03 - Wed Mar 24 09:48:55 EDT 2010
 
