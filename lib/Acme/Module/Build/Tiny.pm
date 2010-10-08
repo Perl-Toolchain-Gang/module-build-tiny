@@ -82,7 +82,8 @@ sub import {
   };
   print "Creating new 'Build' script for '$meta->{name}'" .
         " version '$meta->{version}'\n";
-  _spew('Build' => "#!$^X\n", _slurp( $INC{_mod2pm(shift)} ) );
+  my $perl = $^X =~ /\Aperl[.0-9]*\z/ ? $Config{perlpath} : $^X;
+  _spew('Build' => "#!$perl\n", _slurp( $INC{_mod2pm(shift)} ) );
   chmod 0755, 'Build';
   _spew( '_build/prereqs', _data_dump(_find_prereqs()) );
   _spew( '_build/build_params', _data_dump($opt) );
