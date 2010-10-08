@@ -1,5 +1,11 @@
 Revision history for Acme::Module::Build::Tiny
 
+0.05 - ??
+
+  - If $^X looks like a perl found in the path, use $Config{perlpath}
+
+  - Avoid issuing a warning when Build is run with no arguments
+
 0.04 - Wed Mar 24 22:59:50 EDT 2010
 
   - Fix test bug when running a versioned perl (e.g. perl5.10.1)
