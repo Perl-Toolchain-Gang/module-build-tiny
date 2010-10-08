@@ -61,7 +61,9 @@ sub _get_options {
 
 sub run {
   my $opt = eval { do '_build/build_params' } || {};
-  my $action = $ARGV[0] =~ /\A\w+\z/ ? $ARGV[0] : 'build';
+  my $action = ! defined $ARGV[0]    ? 'build'
+             : $ARGV[0] =~ /\A\w+\z/ ? $ARGV[0]
+             : 'build';
   _get_options($action, $opt);
   __PACKAGE__->can($action)->(%$opt) or exit 1;
 }
