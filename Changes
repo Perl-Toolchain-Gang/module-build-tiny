@@ -1,6 +1,6 @@
 Revision history for Acme::Module::Build::Tiny
 
-0.05 - ??
+0.05 - Fri Oct  8 15:19:31 EDT 2010
 
   - If $^X looks like a perl found in the path, use $Config{perlpath}
 
