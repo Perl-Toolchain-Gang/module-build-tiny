@@ -4,4 +4,4 @@ use strict;
 use warnings;
 use IO::File 1.00 ();
 my $fh = IO::File->new("Build.PL", "w");
-print {$fh} "use lib 'inc'; use Acme::Module::Build::Tiny;Build(\@ARGV);\n";
+print {$fh} "use lib 'inc'; use Module::Build::Tiny;Build(\@ARGV);\n";

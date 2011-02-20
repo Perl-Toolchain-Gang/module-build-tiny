@@ -114,7 +114,7 @@ sub _gen_default_filedata {
   };
 
   $self->$add_unless('Build.PL', undent(<<"      ---"));
-      use lib 'inc'; use Acme::Module::Build::Tiny;Build_PL(\@ARGV);
+      use lib 'inc'; use Module::Build::Tiny;Build_PL(\@ARGV);
       ---
 
   my $module_filename =

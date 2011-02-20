@@ -1,4 +1,4 @@
-package Acme::Module::Build::Tiny;
+package Module::Build::Tiny;
 use strict;
 use warnings;
 use Config;
@@ -110,7 +110,7 @@ my %actions;
 	  File::Path::rmtree($distdir);
 	},
 	clean => sub {
-		File::Path::rmtree('blib');
+	 	File::Path::rmtree('blib');
 		1;
 	},
 	realclean => sub {
@@ -143,8 +143,8 @@ sub Build_PL {
   print "Creating new 'Build' script for '$meta->{name}'" .
         " version '$meta->{version}'\n";
   my $perl = $^X =~ /\Aperl[.0-9]*\z/ ? $Config{perlpath} : $^X;
-  my $dir = _path2mod($f[0]) eq 'Acme::Module::Build::Tiny' ? 'lib' : 'inc' ;
-  _spew('Build' => "#!$perl\n", "use lib '$dir';\nuse Acme::Module::Build::Tiny;\nBuild(\@ARGV);\n");
+  my $dir = _path2mod($f[0]) eq __PACKAGE__ ? 'lib' : 'inc' ;
+  _spew('Build' => "#!$perl\n", "use lib '$dir';\nuse Module::Build::Tiny;\nBuild(\@ARGV);\n");
   chmod 0755, 'Build';
   _spew( '_build/prereqs', _data_dump(_find_prereqs()) );
   _spew( '_build/build_params', _data_dump($opt) );
@@ -234,17 +234,17 @@ __END__
 
 =head1 NAME
 
-Acme::Module::Build::Tiny - A tiny replacement for Module::Build
+Module::Build::Tiny - A tiny replacement for Module::Build
 
 =head1 SYNOPSIS
 
-  # First, install Acme::Module::Build::Tiny
+  # First, install Module::Build::Tiny
 
   # From the command line, run this:
   $ btiny
 
   # Which generates this Build.PL:
-  use lib 'inc'; use Acme::Module::Build::Tiny; Build_PL(@ARGV);
+  use lib 'inc'; use Module::Build::Tiny; Build_PL(@ARGV);
 
   # That's it!
 
@@ -277,13 +277,13 @@ Module::Build) installed.
   * Generated code from PL files
   * Building XS or C
   * Manpage or HTML documentation generation
-  * Subclassing Acme::Module::Build::Tiny
+  * Subclassing Module::Build::Tiny
   * Licenses in META.yml other than 'perl'
 
 =head2 Other limitations
 
   * May only work on a Unix-like or Windows OS
-  * This is an Acme module -- use at your own risk
+  * This is an experimental module -- use at your own risk
 
 =head2 Directory structure
 

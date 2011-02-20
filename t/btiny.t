@@ -16,5 +16,5 @@ ok( ! system($^X, $btiny), "ran btiny without error" );
 ok( -e 'Build.PL', "Build.PL created");
 
 my $text = do { local (@ARGV,$/) = 'Build.PL'; <> };
-is( $text, "use lib 'inc'; use Acme::Module::Build::Tiny;Build(\@ARGV);\n", "contents correct");
+is( $text, "use lib 'inc'; use Module::Build::Tiny;Build(\@ARGV);\n", "contents correct");
 
