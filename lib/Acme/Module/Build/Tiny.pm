@@ -59,18 +59,77 @@ sub _get_options {
   Getopt::Long::GetOptions($opt, @opts_spec);
 }
 
+my %actions;
+%actions = (
+	build => sub {
+	  my $map = {
+		(map {$_=>"blib/$_"} _files('lib')),
+		(map {;"bin/$_"=>"blib/script/$_"} map {s{^bin/}{}; $_} _files('bin')),
+	  };
+	  ExtUtils::Install::pm_to_blib($map, 'blib/lib/auto');
+	  ExtUtils::MM->fixin($_), chmod(0555, $_) for _files('blib/script');
+	  return 1;
+	},
+	test => sub {
+	  $actions{build}->();
+	  local @INC = (File::Spec->rel2abs('blib/lib'), @INC);
+	  Test::Harness::runtests(_files('t'));
+	},
+	install => sub {
+	  my %opt = @_;
+	  $actions{build}->();
+	  ExtUtils::Install::install(
+		($opt{install_base} ? _install_base($opt{install_base}) : \%install_map), 1
+	  );
+	  return 1;
+	},
+	distdir => sub {
+	  require ExtUtils::Manifest; ExtUtils::Manifest->VERSION(1.57);
+	  File::Path::rmtree(_distdir());
+	  _spew('MANIFEST.SKIP', "#!include_default\n^"._distbase()."\n") unless -f 'MANIFEST.SKIP';
+	  local $ExtUtils::Manifest::Quiet = 1;
+	  ExtUtils::Manifest::mkmanifest();
+	  ExtUtils::Manifest::manicopy( ExtUtils::Manifest::maniread(), _distdir() );
+	  _spew(_distdir("/inc/",_mod2pm(__PACKAGE__)) => _slurp( __FILE__ ) );
+	  _append(_distdir("MANIFEST"), "inc/" . _mod2pm(__PACKAGE__) . "\n");
+	  _write_meta(_distdir("META.yml")); 
+	  _append(_distdir("MANIFEST"), "META.yml");
+	},
+	dist => sub {
+	  require Archive::Tar; Archive::Tar->VERSION(1.09);
+	  distdir();
+	  my ($distdir,@f) = (_distdir(),_files(_distdir()));
+	  no warnings 'once';
+	  $Archive::Tar::DO_NOT_USE_PREFIX = (grep { length($_) >= 100 } @f) ? 0 : 1;
+	  my $tar = Archive::Tar->new;
+	  $tar->add_files(@f);
+	  $_->mode($_->mode & ~022) for $tar->get_files;
+	  $tar->write("$distdir.tar.gz", 1);
+	  File::Path::rmtree($distdir);
+	},
+	clean => sub {
+		File::Path::rmtree('blib');
+		1;
+	},
+	realclean => sub {
+		clean();
+		File::Path::rmtree($_) for _distdir(), qw/Build _build/;
+		1;
+	},
+	debug => sub {
+	  my %opt = @_;
+	  print _data_dump(\%opt) . "\n";
+	},
+);
+
 sub run {
   my $opt = eval { do '_build/build_params' } || {};
   my $action = ! defined $ARGV[0]    ? 'build'
              : $ARGV[0] =~ /\A\w+\z/ ? $ARGV[0]
              : 'build';
   _get_options($action, $opt);
-  __PACKAGE__->can($action)->(%$opt) or exit 1;
-}
-
-sub debug {
-  my %opt = @_;
-  print _data_dump(\%opt) . "\n";
+  my $action_sub = $actions{$action};
+  $action_sub ? $action_sub->(%$opt) : exit 1;
 }
 
 sub import {
@@ -91,64 +150,10 @@ sub import {
   _spew( 'MYMETA.yml', _slurp('META.yml')) if -f 'META.yml';
 }
 
-sub build {
-  my $map = {
-    (map {$_=>"blib/$_"} _files('lib')),
-    (map {;"bin/$_"=>"blib/script/$_"} map {s{^bin/}{}; $_} _files('bin')),
-  };
-  ExtUtils::Install::pm_to_blib($map, 'blib/lib/auto');
-  ExtUtils::MM->fixin($_), chmod(0555, $_) for _files('blib/script');
-  return 1;
-}
-
-sub test {
-  build();
-  local @INC = (File::Spec->rel2abs('blib/lib'), @INC);
-  Test::Harness::runtests(_files('t'));
-}
 
 sub _install_base {
   my $map = {map {$_=>File::Spec->catdir($_[0],@{$install_base{$_}})} keys %install_base};
 }
-
-sub install {
-  my %opt = @_;
-  build();
-  ExtUtils::Install::install(
-    ($opt{install_base} ? _install_base($opt{install_base}) : \%install_map), 1
-  );
-  return 1;
-}
-
-sub distdir {
-  require ExtUtils::Manifest; ExtUtils::Manifest->VERSION(1.57);
-  File::Path::rmtree(_distdir());
-  _spew('MANIFEST.SKIP', "#!include_default\n^"._distbase()."\n") unless -f 'MANIFEST.SKIP';
-  local $ExtUtils::Manifest::Quiet = 1;
-  ExtUtils::Manifest::mkmanifest();
-  ExtUtils::Manifest::manicopy( ExtUtils::Manifest::maniread(), _distdir() );
-  _spew(_distdir("/inc/",_mod2pm(__PACKAGE__)) => _slurp( __FILE__ ) );
-  _append(_distdir("MANIFEST"), "inc/" . _mod2pm(__PACKAGE__) . "\n");
-  _write_meta(_distdir("META.yml")); 
-  _append(_distdir("MANIFEST"), "META.yml");
-}
-
-sub dist {
-  require Archive::Tar; Archive::Tar->VERSION(1.09);
-  distdir();
-  my ($distdir,@f) = (_distdir(),_files(_distdir()));
-  no warnings 'once';
-  $Archive::Tar::DO_NOT_USE_PREFIX = (grep { length($_) >= 100 } @f) ? 0 : 1;
-  my $tar = Archive::Tar->new;
-  $tar->add_files(@f);
-  $_->mode($_->mode & ~022) for $tar->get_files;
-  $tar->write("$distdir.tar.gz", 1);
-  File::Path::rmtree($distdir);
-}
-
-sub clean { File::Path::rmtree('blib'); 1 }
-
-sub realclean { clean(); File::Path::rmtree($_) for _distdir(), qw/Build _build/; 1; }
 
 sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
 sub _spew {
