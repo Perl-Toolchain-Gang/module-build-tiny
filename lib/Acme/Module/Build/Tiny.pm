@@ -12,7 +12,9 @@ use Getopt::Long 0 ();
 use Test::Harness 0 ();
 use Tie::File 0 ();
 use Text::ParseWords 0 ();
+use Exporter 5.57 'import';
 our $VERSION = '0.05';
+our @EXPORT = qw/Build Build_PL/;
 
 my %re = (
   lib     => qr{\.(?:pm|pod)$},
@@ -73,7 +75,7 @@ my %actions;
 	test => sub {
 	  $actions{build}->();
 	  local @INC = (File::Spec->rel2abs('blib/lib'), @INC);
-	  Test::Harness::runtests(_files('t'));
+	  Test::Harness::runtests(grep { !m{/\.} } _files('t'));
 	},
 	install => sub {
 	  my %opt = @_;
@@ -112,7 +114,7 @@ my %actions;
 		1;
 	},
 	realclean => sub {
-		clean();
+		$actions{clean}->();
 		File::Path::rmtree($_) for _distdir(), qw/Build _build/;
 		1;
 	},
@@ -122,17 +124,16 @@ my %actions;
 	},
 );
 
-sub run {
+sub Build(\@) {
+  my $arguments = shift;
   my $opt = eval { do '_build/build_params' } || {};
-  my $action = ! defined $ARGV[0]    ? 'build'
-             : $ARGV[0] =~ /\A\w+\z/ ? $ARGV[0]
-             : 'build';
+  my $action = defined $arguments->[0] && $arguments->[0] =~ /\A\w+\z/ ? $ARGV[0] : 'build';
   _get_options($action, $opt);
   my $action_sub = $actions{$action};
   $action_sub ? $action_sub->(%$opt) : exit 1;
 }
 
-sub import {
+sub Build_PL {
   _get_options('Build_PL', my $opt = {});
   my @f = _files('lib');
   my $meta = {
@@ -142,14 +143,14 @@ sub import {
   print "Creating new 'Build' script for '$meta->{name}'" .
         " version '$meta->{version}'\n";
   my $perl = $^X =~ /\Aperl[.0-9]*\z/ ? $Config{perlpath} : $^X;
-  _spew('Build' => "#!$perl\n", _slurp( $INC{_mod2pm(shift)} ) );
+  my $dir = _path2mod($f[0]) eq 'Acme::Module::Build::Tiny' ? 'lib' : 'inc' ;
+  _spew('Build' => "#!$perl\n", "use lib '$dir';\nuse Acme::Module::Build::Tiny;\nBuild(\@ARGV);\n");
   chmod 0755, 'Build';
   _spew( '_build/prereqs', _data_dump(_find_prereqs()) );
   _spew( '_build/build_params', _data_dump($opt) );
   _spew( '_build/meta', _data_dump(_fill_meta($meta, $f[0])) );
   _spew( 'MYMETA.yml', _slurp('META.yml')) if -f 'META.yml';
 }
-
 
 sub _install_base {
   my $map = {map {$_=>File::Spec->catdir($_[0],@{$install_base{$_}})} keys %install_base};
@@ -227,8 +228,6 @@ sub _find_prereqs {
   return { requires => \%requires, build_requires => \%build_requires };
 }
 
-run() unless caller; # modulino :-)
-
 1;
 
 __END__
@@ -245,7 +244,7 @@ Acme::Module::Build::Tiny - A tiny replacement for Module::Build
   $ btiny
 
   # Which generates this Build.PL:
-  use lib 'inc'; use Acme::Module::Build::Tiny;
+  use lib 'inc'; use Acme::Module::Build::Tiny; Build_PL(@ARGV);
 
   # That's it!
 

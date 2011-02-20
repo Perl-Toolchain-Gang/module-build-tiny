@@ -1,2 +1,4 @@
 # eat our own dogfood
-use lib 'lib'; use Acme::Module::Build::Tiny;
+use lib 'lib';
+use Acme::Module::Build::Tiny;
+Build_PL(@ARGV);
