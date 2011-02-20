@@ -4,10 +4,12 @@ Must:
 * test _build_params
 * write docs
 * write tests
+* add installdirs and install_path
+* replace author actions with Dist::Zilla integration
 
 Maybe:
 * support alternate licenses as params to import()
 * create README
 * create LICENSE
-* installsite and installpath
 * sharedir
+* error on --prefix
