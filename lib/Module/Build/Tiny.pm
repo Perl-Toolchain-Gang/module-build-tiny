@@ -10,7 +10,6 @@ use File::Path 0 ();
 use File::Spec 0 ();
 use Getopt::Long 0 ();
 use Test::Harness 0 ();
-use Tie::File 0 ();
 use Text::ParseWords 0 ();
 use Exporter 5.57 'import';
 our $VERSION = '0.05';
@@ -19,9 +18,6 @@ our @EXPORT = qw/Build Build_PL/;
 my %re = (
   lib     => qr{\.(?:pm|pod)$},
   t       => qr{\.t},
-  't/lib' => qr{\.(?:pm|pod)$},
-  prereq  => qr{^\s*use[ \t]+(\S+)[ \t]+(v?[0-9._]+)[^;]*;}m,
-  authors => qr{^=head1 AUTHORS?\s*\n(.*?)^=\w}sm,
 );
 
 my %install_map = map { +"blib/$_"  => $Config{"installsite$_"} } qw/lib script/;
@@ -85,30 +81,6 @@ my %actions;
 	  );
 	  return 1;
 	},
-	distdir => sub {
-	  require ExtUtils::Manifest; ExtUtils::Manifest->VERSION(1.57);
-	  File::Path::rmtree(_distdir());
-	  _spew('MANIFEST.SKIP', "#!include_default\n^"._distbase()."\n") unless -f 'MANIFEST.SKIP';
-	  local $ExtUtils::Manifest::Quiet = 1;
-	  ExtUtils::Manifest::mkmanifest();
-	  ExtUtils::Manifest::manicopy( ExtUtils::Manifest::maniread(), _distdir() );
-	  _spew(_distdir("/inc/",_mod2pm(__PACKAGE__)) => _slurp( __FILE__ ) );
-	  _append(_distdir("MANIFEST"), "inc/" . _mod2pm(__PACKAGE__) . "\n");
-	  _write_meta(_distdir("META.yml")); 
-	  _append(_distdir("MANIFEST"), "META.yml");
-	},
-	dist => sub {
-	  require Archive::Tar; Archive::Tar->VERSION(1.09);
-	  distdir();
-	  my ($distdir,@f) = (_distdir(),_files(_distdir()));
-	  no warnings 'once';
-	  $Archive::Tar::DO_NOT_USE_PREFIX = (grep { length($_) >= 100 } @f) ? 0 : 1;
-	  my $tar = Archive::Tar->new;
-	  $tar->add_files(@f);
-	  $_->mode($_->mode & ~022) for $tar->get_files;
-	  $tar->write("$distdir.tar.gz", 1);
-	  File::Path::rmtree($distdir);
-	},
 	clean => sub {
 	 	File::Path::rmtree('blib');
 		1;
@@ -117,10 +89,6 @@ my %actions;
 		$actions{clean}->();
 		File::Path::rmtree($_) for _distdir(), qw/Build _build/;
 		1;
-	},
-	debug => sub {
-	  my %opt = @_;
-	  print _data_dump(\%opt) . "\n";
 	},
 );
 
@@ -140,15 +108,12 @@ sub Build_PL {
     name     => _mod2dist(_path2mod($f[0])),
     version  => MM->parse_version($f[0]),
   };
-  print "Creating new 'Build' script for '$meta->{name}'" .
-        " version '$meta->{version}'\n";
+  print "Creating new 'Build' script for '$meta->{name}' version '$meta->{version}'\n";
   my $perl = $^X =~ /\Aperl[.0-9]*\z/ ? $Config{perlpath} : $^X;
   my $dir = _path2mod($f[0]) eq __PACKAGE__ ? 'lib' : 'inc' ;
   _spew('Build' => "#!$perl\n", "use lib '$dir';\nuse Module::Build::Tiny;\nBuild(\@ARGV);\n");
   chmod 0755, 'Build';
-  _spew( '_build/prereqs', _data_dump(_find_prereqs()) );
   _spew( '_build/build_params', _data_dump($opt) );
-  _spew( '_build/meta', _data_dump(_fill_meta($meta, $f[0])) );
   _spew( 'MYMETA.yml', _slurp('META.yml')) if -f 'META.yml';
 }
 
@@ -163,13 +128,11 @@ sub _spew {
   open my $fh, '>', $file;
   print {$fh} @_;
 }
-sub _append { open my $fh, ">>", shift; print {$fh} @_ }
 
 sub _data_dump {
   'do{ my ' . Data::Dumper->new([shift],['x'])->Purity(1)->Dump() . '$x; }'
 }
 
-sub _mod2pm   { (my $mod = shift) =~ s{::}{/}g; return "$mod.pm" }
 sub _path2mod { (my $pm  = shift) =~ s{/}{::}g; return substr $pm, 5, -3 }
 sub _mod2dist { (my $mod = shift) =~ s{::}{-}g; return $mod; }
 
@@ -188,46 +151,6 @@ sub _distdir {
   return File::Spec->catfile(_distbase ."-". MM->parse_version($f[0]), @_);
 }
 
-sub _fill_meta {
-  my ($m, $src) = @_;
-  for ( split /\n/, _slurp($src) ) {
-    next unless /^=(?!cut)/ .. /^=cut/;  # in POD
-    ($m->{abstract}) = /^  (?:  [a-z:]+  \s+ - \s+  )  (.*\S)  /ix
-      unless $m->{abstract};
-  }
-  $m->{author} = _find_authors($src);
-  return $m;
-}
-
-sub _find_authors {
-  my $guts = _slurp($_[0]);
-  my ($block) = $guts =~ $re{authors};
-  return $block ? [ map { s{^\s+}{}; s{\s+$}{}; $_ } grep { /\S/ } split /\n/, $block ] : [];
-}
-
-sub _write_meta {
-  my $file = shift; 
-  my $meta = eval { do '_build/meta' } || {};
-  my $prereqs = eval { do '_build/prereqs' } || {};
-  $meta->{$_} = $prereqs->{$_} for keys %$prereqs;
-  $meta->{generated_by} = sprintf("%s version %s", __PACKAGE__, $VERSION);
-  $meta->{'meta-spec'} = { version => 1.4, url => 'http://module-build.sourceforge.net/META-spec-v1.4.html' };
-  $meta->{'license'} = 'perl';
-  require Module::Build::YAML;
-  Module::Build::YAML::DumpFile($file,$meta);
-}
-
-sub _find_prereqs {
-  my (%requires, %build_requires);
-  for my $guts ( map { _slurp($_) } _files('lib'), _files('bin') ) {
-    while ( $guts =~ m{$re{prereq}}g ) { $requires{$1}=$2; }
-  }
-  for my $guts ( map { _slurp($_) } _files('t'), _files('t/lib') ) {
-    while ( $guts =~ m{$re{prereq}}g ) { $build_requires{$1}=$2; }
-  }
-  return { requires => \%requires, build_requires => \%build_requires };
-}
-
 1;
 
 __END__
@@ -238,15 +161,16 @@ Module::Build::Tiny - A tiny replacement for Module::Build
 
 =head1 SYNOPSIS
 
-  # First, install Module::Build::Tiny
+ # First, install Module::Build::Tiny
 
-  # From the command line, run this:
-  $ btiny
+ # Then copy this file into inc
 
-  # Which generates this Build.PL:
-  use lib 'inc'; use Module::Build::Tiny; Build_PL(@ARGV);
+ # Then create this Build.PL
+ use lib 'inc';
+ use Module::Build::Tiny;
+ Build_PL(@ARGV);
 
-  # That's it!
+ # That's it!
 
 =head1 DESCRIPTION
 

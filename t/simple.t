@@ -8,7 +8,7 @@ use Test::More 0.86;
 use lib 't/lib';
 use DistGen qw/undent/;
 
-plan tests => 17;
+plan tests => 16;
 
 #--------------------------------------------------------------------------#
 # fixtures
@@ -45,7 +45,6 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
   my $line = <$fh>;
 
   like( $line, qr{\A$interpreter}, "Build has shebang line with \$^X" );
-  ok( -f '_build/prereqs', "_build/prereqs created" );
   ok( -f '_build/build_params', "_build/build_params created" );
 }
 
