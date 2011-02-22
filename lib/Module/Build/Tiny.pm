@@ -3,14 +3,15 @@ use strict;
 use warnings;
 use Config;
 use Data::Dumper 0 ();
-use ExtUtils::Install 0 ();
+use ExtUtils::Install 0 qw/pm_to_blib install/;
 use ExtUtils::MakeMaker 0 ();
-use File::Find 0 ();
-use File::Path 0 ();
-use File::Spec 0 ();
-use Getopt::Long 0 ();
-use Test::Harness 0 ();
-use Text::ParseWords 0 ();
+use File::Basename 0 qw/dirname/;
+use File::Find 0 qw/find/;
+use File::Path 0 qw/mkpath rmtree/;
+use File::Spec::Functions 0 qw/catfile catdir rel2abs/;
+use Getopt::Long 0 qw/GetOptions/;
+use Test::Harness 0 qw/runtests/;
+use Text::ParseWords 0 qw/shellwords/;
 use Exporter 5.57 'import';
 our $VERSION = '0.05';
 our @EXPORT = qw/Build Build_PL/;
@@ -29,14 +30,14 @@ my @opts_spec = ( 'install_base:s', 'uninst:i' );
 sub _split_like_shell {
   my $string = shift;
   $string =~ s/^\s+|\s+$//g;
-  return Text::ParseWords::shellwords($string);
+  return shellwords($string);
 }
 
 sub _home { return $ENV{HOME} || $ENV{USERPROFILE} }
 
-sub _default_rc { return File::Spec->catfile( _home(), '.modulebuildrc' ) }
+sub _default_rc { return catfile( _home(), '.modulebuildrc' ) }
 
-sub _get_rc_opts { 
+sub _get_rc_opts {
   my $rc_file = ($ENV{MODULEBUILDRC} || _default_rc());
   return {} unless -f $rc_file;
   my $guts = _slurp( $rc_file );
@@ -54,7 +55,7 @@ sub _get_options {
   for my $s ( $ENV{PERL_MB_OPT}, $rc_opts->{$action}, $rc_opts->{'*'} ) {
     unshift @ARGV, _split_like_shell($s) if defined $s && length $s;
   }
-  Getopt::Long::GetOptions($opt, @opts_spec);
+  GetOptions($opt, @opts_spec);
 }
 
 my %actions;
@@ -64,30 +65,28 @@ my %actions;
 		(map {$_=>"blib/$_"} _files('lib')),
 		(map {;"bin/$_"=>"blib/script/$_"} map {s{^bin/}{}; $_} _files('bin')),
 	  };
-	  ExtUtils::Install::pm_to_blib($map, 'blib/lib/auto');
+	  pm_to_blib($map, 'blib/lib/auto');
 	  ExtUtils::MM->fixin($_), chmod(0555, $_) for _files('blib/script');
 	  return 1;
 	},
 	test => sub {
 	  $actions{build}->();
-	  local @INC = (File::Spec->rel2abs('blib/lib'), @INC);
-	  Test::Harness::runtests(grep { !m{/\.} } _files('t'));
+	  local @INC = (rel2abs('blib/lib'), @INC);
+	  runtests(grep { !m{/\.} } _files('t'));
 	},
 	install => sub {
 	  my %opt = @_;
 	  $actions{build}->();
-	  ExtUtils::Install::install(
-		($opt{install_base} ? _install_base($opt{install_base}) : \%install_map), 1
-	  );
+	  install(($opt{install_base} ? _install_base($opt{install_base}) : \%install_map), 1);
 	  return 1;
 	},
 	clean => sub {
-	 	File::Path::rmtree('blib');
+	 	rmtree('blib');
 		1;
 	},
 	realclean => sub {
 		$actions{clean}->();
-		File::Path::rmtree($_) for _distdir(), qw/Build _build/;
+		rmtree($_) for _distdir(), qw/Build _build/;
 		1;
 	},
 );
@@ -118,13 +117,13 @@ sub Build_PL {
 }
 
 sub _install_base {
-  my $map = {map {$_=>File::Spec->catdir($_[0],@{$install_base{$_}})} keys %install_base};
+  return { map { $_ => catdir($_[0], @{ $install_base{$_} }) } keys %install_base };
 }
 
 sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
 sub _spew {
   my $file = shift;
-  File::Path::mkpath(File::Basename::dirname($file));
+  mkpath(dirname($file));
   open my $fh, '>', $file;
   print {$fh} @_;
 }
@@ -140,7 +139,7 @@ sub _files {
   my ($dir,@f) = shift;
   return unless -d $dir;
   my $regex = $re{$dir} || qr/./;
-  File::Find::find( sub { -f && /$regex/ && push @f, $File::Find::name},$dir);
+  find( sub { -f && /$regex/ && push @f, $File::Find::name},$dir);
   return sort { length $a <=> length $b } @f;
 }
 
@@ -148,7 +147,7 @@ sub _distbase { my @f = _files('lib'); return _mod2dist(_path2mod($f[0])) }
 
 sub _distdir {
   my @f = _files('lib');
-  return File::Spec->catfile(_distbase ."-". MM->parse_version($f[0]), @_);
+  return catfile(_distbase ."-". MM->parse_version($f[0]), @_);
 }
 
 1;
