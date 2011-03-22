@@ -17,11 +17,6 @@ use Exporter 5.57 'import';
 our $VERSION = '0.05';
 our @EXPORT = qw/Build Build_PL/;
 
-my %re = (
-  lib     => qr{\.(?:pm|pod)$},
-  t       => qr{\.t},
-);
-
 my %install_map = map { +"blib/$_"  => $Config{"installsite$_"} } qw/lib script/;
 
 my %install_base = ( lib => [qw/lib perl5/], script => [qw/lib bin/] );
@@ -66,10 +61,7 @@ my $meta = CPAN::Meta->load_file($metafile);
 my %actions;
 %actions = (
 	build => sub {
-	  my $map = {
-		(map {$_=>"blib/$_"} _files('lib')),
-		(map {;"bin/$_"=>"blib/script/$_"} map {s{^bin/}{}; $_} _files('bin')),
-	  };
+	  my $map = { (map { $_ => "blib/$_" } _files('lib', qr{\.(?:pm|pod)$}), _files('script')) };
 	  pm_to_blib($map, 'blib/lib/auto');
 	  ExtUtils::MM->fixin($_), chmod(0555, $_) for _files('blib/script');
 	  return 1;
@@ -77,7 +69,7 @@ my %actions;
 	test => sub {
 	  $actions{build}->();
 	  local @INC = (rel2abs('blib/lib'), @INC);
-	  runtests(grep { !m{/\.} } _files('t'));
+	  runtests(grep { !m{/\.} } _files('t', qr{\.t}));
 	},
 	install => sub {
 	  my %opt = @_;
@@ -134,11 +126,12 @@ sub _data_dump {
 sub _dist2mod { (my $mod = shift) =~ s{-}{::}g; return $mod; }
 
 sub _files {
-  my ($dir,@f) = shift;
+  my $dir = shift;
+  my @f;
   return unless -d $dir;
-  my $regex = $re{$dir} || qr/./;
+  my $regex = shift || qr//;
   find( sub { -f && /$regex/ && push @f, $File::Find::name},$dir);
-  return sort { length $a <=> length $b } @f;
+  return sort @f;
 }
 
 1;

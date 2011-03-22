@@ -16,7 +16,7 @@ plan tests => 16;
 
 my $dist = DistGen->new(name => 'Foo::Bar');
 $dist->chdir_in;
-$dist->add_file('bin/simple', undent(<<"    ---"));
+$dist->add_file('script/simple', undent(<<"    ---"));
     #!perl
     use Foo::Bar;
     print Simple->VERSION . "\n";
