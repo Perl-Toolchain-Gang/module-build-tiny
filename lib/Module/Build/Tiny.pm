@@ -1,6 +1,7 @@
 package Module::Build::Tiny;
 use strict;
 use warnings;
+use CPAN::Meta;
 use Config;
 use Data::Dumper 0 ();
 use ExtUtils::Install 0 qw/pm_to_blib install/;
@@ -58,6 +59,10 @@ sub _get_options {
   GetOptions($opt, @opts_spec);
 }
 
+my ($metafile) = grep { -e $_ } qw/META.json META.yml/;
+die "No META information provided\n" if not defined $metafile;
+my $meta = CPAN::Meta->load_file($metafile);
+
 my %actions;
 %actions = (
 	build => sub {
@@ -102,18 +107,13 @@ sub Build(\@) {
 
 sub Build_PL {
   _get_options('Build_PL', my $opt = {});
-  my @f = _files('lib');
-  my $meta = {
-    name     => _mod2dist(_path2mod($f[0])),
-    version  => MM->parse_version($f[0]),
-  };
-  print "Creating new 'Build' script for '$meta->{name}' version '$meta->{version}'\n";
+  printf "Creating new 'Build' script for '%s' version '%s'\n", $meta->name, $meta->version;
   my $perl = $^X =~ /\Aperl[.0-9]*\z/ ? $Config{perlpath} : $^X;
-  my $dir = _path2mod($f[0]) eq __PACKAGE__ ? 'lib' : 'inc' ;
+  my $dir = _dist2mod($meta->name) eq __PACKAGE__ ? 'lib' : 'inc' ;
   _spew('Build' => "#!$perl\n", "use lib '$dir';\nuse Module::Build::Tiny;\nBuild(\@ARGV);\n");
   chmod 0755, 'Build';
   _spew( '_build/build_params', _data_dump($opt) );
-  _spew( 'MYMETA.yml', _slurp('META.yml')) if -f 'META.yml';
+  _spew( "MY$_", _slurp($_)) for grep -f, qw/META.json META.yml/;
 }
 
 sub _install_base {
@@ -132,8 +132,8 @@ sub _data_dump {
   'do{ my ' . Data::Dumper->new([shift],['x'])->Purity(1)->Dump() . '$x; }'
 }
 
-sub _path2mod { (my $pm  = shift) =~ s{/}{::}g; return substr $pm, 5, -3 }
 sub _mod2dist { (my $mod = shift) =~ s{::}{-}g; return $mod; }
+sub _dist2mod { (my $mod = shift) =~ s{-}{::}g; return $mod; }
 
 sub _files {
   my ($dir,@f) = shift;
