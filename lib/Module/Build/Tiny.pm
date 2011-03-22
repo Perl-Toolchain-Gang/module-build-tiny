@@ -90,8 +90,7 @@ my %actions;
 		1;
 	},
 	realclean => sub {
-		$actions{clean}->();
-		rmtree($_) for _distdir(), qw/Build _build/;
+		rmtree($_) for qw/blib Build _build/;
 		1;
 	},
 );
@@ -132,7 +131,6 @@ sub _data_dump {
   'do{ my ' . Data::Dumper->new([shift],['x'])->Purity(1)->Dump() . '$x; }'
 }
 
-sub _mod2dist { (my $mod = shift) =~ s{::}{-}g; return $mod; }
 sub _dist2mod { (my $mod = shift) =~ s{-}{::}g; return $mod; }
 
 sub _files {
@@ -141,13 +139,6 @@ sub _files {
   my $regex = $re{$dir} || qr/./;
   find( sub { -f && /$regex/ && push @f, $File::Find::name},$dir);
   return sort { length $a <=> length $b } @f;
-}
-
-sub _distbase { my @f = _files('lib'); return _mod2dist(_path2mod($f[0])) }
-
-sub _distdir {
-  my @f = _files('lib');
-  return catfile(_distbase ."-". MM->parse_version($f[0]), @_);
 }
 
 1;
