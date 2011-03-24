@@ -31,12 +31,12 @@ sub _split_like_shell {
 }
 
 sub _get_options {
-  my ($action,$opt) = @_;
+  my ($action, $bpl) = @_;
   my $rc_opts = read_config();
-  for my $s ( $ENV{PERL_MB_OPT}, $rc_opts->{$action}, $rc_opts->{'*'} ) {
-    unshift @ARGV, _split_like_shell($s) if defined $s && length $s;
-  }
-  GetOptions($opt, @opts_spec);
+  my @env = defined $ENV{PERL_MB_OPT} ? _split_like_shell($ENV{PERL_MB_OPT}) : ();
+  unshift @ARGV, map { @$_ } grep { defined } $rc_opts->{'*'}, $bpl, $rc_opts->{$action}, \@env;
+  GetOptions(my $opt = {}, @opts_spec);
+  return $opt;
 }
 
 my ($metafile) = grep { -e $_ } qw/META.json META.yml/;
@@ -74,21 +74,20 @@ my %actions;
 
 sub Build(\@) {
   my $arguments = shift;
-  my $opt = eval { do '_build/build_params' } || {};
+  my $bpl = eval { do '_build/build_params' };
   my $action = defined $arguments->[0] && $arguments->[0] =~ /\A\w+\z/ ? $ARGV[0] : 'build';
-  _get_options($action, $opt);
+  my $opt = _get_options($action, $bpl);
   my $action_sub = $actions{$action};
   $action_sub ? $action_sub->(%$opt) : exit 1;
 }
 
 sub Build_PL {
-  _get_options('Build_PL', my $opt = {});
   printf "Creating new 'Build' script for '%s' version '%s'\n", $meta->name, $meta->version;
   my $perl = $^X =~ /\Aperl[.0-9]*\z/ ? $Config{perlpath} : $^X;
   my $dir = _dist2mod($meta->name) eq __PACKAGE__ ? 'lib' : 'inc' ;
   _spew('Build' => "#!$perl\n", "use lib '$dir';\nuse Module::Build::Tiny;\nBuild(\@ARGV);\n");
   chmod 0755, 'Build';
-  _spew( '_build/build_params', _data_dump($opt) );
+  _spew( '_build/build_params', _data_dump(\@ARGV) );
   _spew( "MY$_", _slurp($_)) for grep -f, qw/META.json META.yml/;
 }
 
