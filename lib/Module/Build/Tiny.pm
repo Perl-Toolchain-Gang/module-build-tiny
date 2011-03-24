@@ -83,9 +83,9 @@ sub Build(\@) {
 
 sub Build_PL {
   printf "Creating new 'Build' script for '%s' version '%s'\n", $meta->name, $meta->version;
-  my $perl = $^X =~ /\Aperl[.0-9]*\z/ ? $Config{perlpath} : $^X;
   my $dir = _dist2mod($meta->name) eq __PACKAGE__ ? 'lib' : 'inc' ;
-  _spew('Build' => "#!$perl\n", "use lib '$dir';\nuse Module::Build::Tiny;\nBuild(\@ARGV);\n");
+  _spew('Build' => "#!perl\n", "use lib '$dir';\nuse Module::Build::Tiny;\nBuild(\@ARGV);\n");
+  ExtUtils::MM->fixin('Build');
   chmod 0755, 'Build';
   _spew( '_build/build_params', _data_dump(\@ARGV) );
   _spew( "MY$_", _slurp($_)) for grep -f, qw/META.json META.yml/;
