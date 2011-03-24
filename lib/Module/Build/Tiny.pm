@@ -4,6 +4,7 @@ use warnings;
 use CPAN::Meta;
 use Config;
 use Data::Dumper 0 ();
+use ExtUtils::BuildRC 0 qw/read_config/;
 use ExtUtils::Install 0 qw/pm_to_blib install/;
 use ExtUtils::MakeMaker 0 ();
 use File::Basename 0 qw/dirname/;
@@ -29,25 +30,9 @@ sub _split_like_shell {
   return shellwords($string);
 }
 
-sub _home { return $ENV{HOME} || $ENV{USERPROFILE} }
-
-sub _default_rc { return catfile( _home(), '.modulebuildrc' ) }
-
-sub _get_rc_opts {
-  my $rc_file = ($ENV{MODULEBUILDRC} || _default_rc());
-  return {} unless -f $rc_file;
-  my $guts = _slurp( $rc_file );
-  $guts =~ s{\n[ \t]+}{ }mg; # join lines with leading whitespace
-  $guts =~ s{^#.*$}{}mg; # strip comments
-  $guts =~ s{\n\s*\n}{\n}mg; # empty lines
-  my %opt = map  { my ($k,$v) = $_ =~ /(\S+)\s+(.*)/; $k => $v } 
-            grep { /\S/ } split /\n/, $guts;
-  return \%opt;
-}
-
 sub _get_options {
   my ($action,$opt) = @_;
-  my $rc_opts = _get_rc_opts;
+  my $rc_opts = read_config();
   for my $s ( $ENV{PERL_MB_OPT}, $rc_opts->{$action}, $rc_opts->{'*'} ) {
     unshift @ARGV, _split_like_shell($s) if defined $s && length $s;
   }

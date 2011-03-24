@@ -13,6 +13,7 @@ resources:
 requires:
   perl: 5.006
   CPAN::Meta: 0
+  ExtUtils::BuildRC: 0
 no_index:
   directory:
     - t
