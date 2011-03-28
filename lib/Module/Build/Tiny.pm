@@ -43,32 +43,29 @@ my ($metafile) = grep { -e $_ } qw/META.json META.yml/;
 die "No META information provided\n" if not defined $metafile;
 my $meta = CPAN::Meta->load_file($metafile);
 
-my %actions;
-%actions = (
-	build => sub {
-	  my $map = { (map { $_ => "blib/$_" } _files('lib', qr{\.(?:pm|pod)$}), _files('script')) };
-	  pm_to_blib($map, 'blib/lib/auto');
-	  ExtUtils::MM->fixin($_), chmod(0555, $_) for _files('blib/script');
-	  return 1;
-	},
+sub build {
+  my %map = map { $_ => "blib/$_" } _files('lib', qr{\.(?:pm|pod)$}), _files('script');
+  pm_to_blib(\%map, 'blib/lib/auto');
+  ExtUtils::MM->fixin($_), chmod(0555, $_) for _files('blib/script');
+}
+
+my %actions = (
+	build => \&build,
 	test => sub {
-	  $actions{build}->();
+	  build(@_);
 	  local @INC = (rel2abs('blib/lib'), @INC);
 	  runtests(grep { !m{/\.} } _files('t', qr{\.t}));
 	},
 	install => sub {
 	  my %opt = @_;
-	  $actions{build}->();
+	  build(%opt);
 	  install(($opt{install_base} ? _install_base($opt{install_base}) : \%install_map), 1);
-	  return 1;
 	},
 	clean => sub {
 	 	rmtree('blib');
-		1;
 	},
 	realclean => sub {
 		rmtree($_) for qw/blib Build _build/;
-		1;
 	},
 );
 
