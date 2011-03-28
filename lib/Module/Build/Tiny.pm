@@ -73,7 +73,7 @@ sub Build(\@) {
 
 sub Build_PL {
   printf "Creating new 'Build' script for '%s' version '%s'\n", $meta->name, $meta->version;
-  my $dir = _dist2mod($meta->name) eq __PACKAGE__ ? 'lib' : 'inc' ;
+  my $dir = $meta->name eq 'Module-Build-Tiny' ? 'lib' : 'inc' ;
   _spew(build_script(), "#!perl\n", "use lib '$dir';\nuse Module::Build::Tiny;\nBuild(\@ARGV);\n");
   make_executable(build_script());
   _spew( '_build/build_params', encode_json(\@ARGV) );
@@ -91,8 +91,6 @@ sub _spew {
   open my $fh, '>', $file;
   print {$fh} @_;
 }
-
-sub _dist2mod { (my $mod = shift) =~ s{-}{::}g; return $mod; }
 
 sub _files {
   my $dir = shift;
