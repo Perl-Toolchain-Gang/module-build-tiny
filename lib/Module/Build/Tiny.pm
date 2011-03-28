@@ -5,15 +5,14 @@ use CPAN::Meta;
 use Config;
 use Data::Dumper 0 ();
 use ExtUtils::BuildRC 0 qw/read_config/;
+use ExtUtils::Helpers qw/make_executable split_like_shell build_script/;
 use ExtUtils::Install 0 qw/pm_to_blib install/;
-use ExtUtils::MakeMaker 0 ();
 use File::Basename 0 qw/dirname/;
 use File::Find 0 qw/find/;
 use File::Path 0 qw/mkpath rmtree/;
 use File::Spec::Functions 0 qw/catfile catdir rel2abs/;
 use Getopt::Long 0 qw/GetOptions/;
 use Test::Harness 0 qw/runtests/;
-use Text::ParseWords 0 qw/shellwords/;
 use Exporter 5.57 'import';
 our $VERSION = '0.05';
 our @EXPORT = qw/Build Build_PL/;
@@ -24,16 +23,10 @@ my %install_base = ( lib => [qw/lib perl5/], script => [qw/lib bin/] );
 
 my @opts_spec = ( 'install_base:s', 'uninst:i' );
 
-sub _split_like_shell {
-  my $string = shift;
-  $string =~ s/^\s+|\s+$//g;
-  return shellwords($string);
-}
-
 sub _get_options {
   my ($action, $bpl) = @_;
   my $rc_opts = read_config();
-  my @env = defined $ENV{PERL_MB_OPT} ? _split_like_shell($ENV{PERL_MB_OPT}) : ();
+  my @env = defined $ENV{PERL_MB_OPT} ? split_like_shell($ENV{PERL_MB_OPT}) : ();
   unshift @ARGV, map { @$_ } grep { defined } $rc_opts->{'*'}, $bpl, $rc_opts->{$action}, \@env;
   GetOptions(my $opt = {}, @opts_spec);
   return $opt;
@@ -46,7 +39,7 @@ my $meta = CPAN::Meta->load_file($metafile);
 sub build {
   my %map = map { $_ => "blib/$_" } _files('lib', qr{\.(?:pm|pod)$}), _files('script');
   pm_to_blib(\%map, 'blib/lib/auto');
-  ExtUtils::MM->fixin($_), chmod(0555, $_) for _files('blib/script');
+  make_executable($_) for _files('blib/script');
 }
 
 my %actions = (
@@ -81,9 +74,8 @@ sub Build(\@) {
 sub Build_PL {
   printf "Creating new 'Build' script for '%s' version '%s'\n", $meta->name, $meta->version;
   my $dir = _dist2mod($meta->name) eq __PACKAGE__ ? 'lib' : 'inc' ;
-  _spew('Build' => "#!perl\n", "use lib '$dir';\nuse Module::Build::Tiny;\nBuild(\@ARGV);\n");
-  ExtUtils::MM->fixin('Build');
-  chmod 0755, 'Build';
+  _spew(build_script(), "#!perl\n", "use lib '$dir';\nuse Module::Build::Tiny;\nBuild(\@ARGV);\n");
+  make_executable(build_script());
   _spew( '_build/build_params', _data_dump(\@ARGV) );
   _spew( "MY$_", _slurp($_)) for grep -f, qw/META.json META.yml/;
 }
