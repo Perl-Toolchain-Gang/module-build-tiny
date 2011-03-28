@@ -50,7 +50,7 @@ my %actions = (
 		rmtree('blib');
 	},
 	realclean => sub {
-		rmtree($_) for qw/blib Build _build/;
+		rmtree($_) for qw/blib Build _build MYMETA.yml MYMETA.json/;
 	},
 );
 
