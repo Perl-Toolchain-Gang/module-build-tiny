@@ -18,7 +18,7 @@ use File::Spec::Functions qw/catfile catdir rel2abs/;
 use Getopt::Long qw/GetOptions/;
 use Test::Harness qw/runtests/;
 
-my %install_map = map { +"blib/$_" => $Config{"installsite$_"} } qw/lib script/;
+my %install_map = map { catdir('blib', $_) => $Config{"installsite$_"} } qw/lib script/;
 
 my %install_base = (lib => [qw/lib perl5/], script => [qw/lib bin/]);
 
@@ -29,16 +29,16 @@ die "No META information provided\n" if not defined $metafile;
 my $meta = CPAN::Meta->load_file($metafile);
 
 sub build {
-	my %map = map { $_ => "blib/$_" } _files('lib', qr{\.(?:pm|pod)$}), _files('script');
-	pm_to_blib(\%map, 'blib/lib/auto');
-	make_executable($_) for _files('blib/script');
+	my %map = map { $_ => catdir('blib', $_) } _files('lib', qr{\.(?:pm|pod)$}), _files('script');
+	pm_to_blib(\%map, catdir(qw/blib lib auto/));
+	make_executable($_) for _files(catdir(qw/blib script/));
 }
 
 my %actions = (
 	build => \&build,
 	test  => sub {
 		build(@_);
-		local @INC = (rel2abs('blib/lib'), @INC);
+		local @INC = (rel2abs(catdir(qw/blib lib/)), @INC);
 		runtests(sort grep { !m{/\.} } _files('t', qr{\.t}));
 	},
 	install => sub {
@@ -65,7 +65,7 @@ sub _get_options {
 
 sub Build(\@) {
 	my $arguments = shift;
-	my $bpl       = decode_json(_slurp('_build/build_params'));
+	my $bpl       = decode_json(_slurp(catfile(qw/_build build_params/)));
 	my $action    = defined $arguments->[0] && $arguments->[0] =~ /\A\w+\z/ ? $ARGV[0] : 'build';
 	my $opt       = _get_options($action, $bpl);
 	$actions{$action} ? $actions{$action}->(%$opt) : die "No such action '$action'\n";
@@ -76,7 +76,7 @@ sub Build_PL {
 	my $dir = $meta->name eq 'Module-Build-Tiny' ? 'lib' : 'inc';
 	_spew(build_script(), "#!perl\n", "use lib '$dir';\nuse Module::Build::Tiny;\nBuild(\@ARGV);\n");
 	make_executable(build_script());
-	_spew('_build/build_params', encode_json(\@ARGV));
+	_spew(catfile(qw/_build build_params/), encode_json(\@ARGV));
 	_spew("MY$_", _slurp($_)) for grep { -f } qw/META.json META.yml/;
 }
 
