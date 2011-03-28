@@ -67,8 +67,7 @@ sub Build(\@) {
   my $bpl = decode_json(_slurp('_build/build_params'));
   my $action = defined $arguments->[0] && $arguments->[0] =~ /\A\w+\z/ ? $ARGV[0] : 'build';
   my $opt = _get_options($action, $bpl);
-  my $action_sub = $actions{$action};
-  $action_sub ? $action_sub->(%$opt) : exit 1;
+  $actions{$action} ? $actions{$action}->(%$opt) : die "No such action '$action'\n";
 }
 
 sub Build_PL {
