@@ -63,18 +63,17 @@ sub _get_options {
 	return $opt;
 }
 
-sub Build(\@) {
-	my $arguments = shift;
-	my $bpl       = decode_json(_slurp(catfile(qw/_build build_params/)));
-	my $action    = defined $arguments->[0] && $arguments->[0] =~ /\A\w+\z/ ? $ARGV[0] : 'build';
-	my $opt       = _get_options($action, $bpl);
+sub Build {
+	my $bpl    = decode_json(_slurp(catfile(qw/_build build_params/)));
+	my $action = @ARGV && $ARGV[0] =~ /\A\w+\z/ ? $ARGV[0] : 'build';
+	my $opt    = _get_options($action, $bpl);
 	$actions{$action} ? $actions{$action}->(%$opt) : die "No such action '$action'\n";
 }
 
 sub Build_PL {
 	printf "Creating new 'Build' script for '%s' version '%s'\n", $meta->name, $meta->version;
 	my $dir = $meta->name eq 'Module-Build-Tiny' ? 'lib' : 'inc';
-	_spew(build_script(), "#!perl\n", "use lib '$dir';\nuse Module::Build::Tiny;\nBuild(\@ARGV);\n");
+	_spew(build_script(), "#!perl\n", "use lib '$dir';\nuse Module::Build::Tiny;\nBuild();\n");
 	make_executable(build_script());
 	_spew(catfile(qw/_build build_params/), encode_json(\@ARGV));
 	_spew("MY$_", _slurp($_)) for grep { -f } qw/META.json META.yml/;
@@ -121,7 +120,7 @@ Module::Build::Tiny - A tiny replacement for Module::Build
  # Then create this Build.PL
  use lib 'inc';
  use Module::Build::Tiny;
- Build_PL(@ARGV);
+ Build_PL();
 
  # That's it!
 
