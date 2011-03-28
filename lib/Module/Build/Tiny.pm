@@ -14,7 +14,7 @@ use File::Spec::Functions 0 qw/catfile catdir rel2abs/;
 use Getopt::Long 0 qw/GetOptions/;
 use Test::Harness 0 qw/runtests/;
 use Exporter 5.57 'import';
-our $VERSION = '0.05';
+our $VERSION = '0.006';
 our @EXPORT = qw/Build Build_PL/;
 
 my %install_map = map { +"blib/$_"  => $Config{"installsite$_"} } qw/lib script/;
