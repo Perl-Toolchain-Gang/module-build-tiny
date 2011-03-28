@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use CPAN::Meta;
 use Config;
-use Data::Dumper 0 ();
+use JSON::PP qw/encode_json decode_json/;
 use ExtUtils::BuildRC 0 qw/read_config/;
 use ExtUtils::Helpers qw/make_executable split_like_shell build_script/;
 use ExtUtils::Install 0 qw/pm_to_blib install/;
@@ -64,7 +64,7 @@ my %actions = (
 
 sub Build(\@) {
   my $arguments = shift;
-  my $bpl = eval { do '_build/build_params' };
+  my $bpl = decode_json(_slurp('_build/build_params'));
   my $action = defined $arguments->[0] && $arguments->[0] =~ /\A\w+\z/ ? $ARGV[0] : 'build';
   my $opt = _get_options($action, $bpl);
   my $action_sub = $actions{$action};
@@ -76,7 +76,7 @@ sub Build_PL {
   my $dir = _dist2mod($meta->name) eq __PACKAGE__ ? 'lib' : 'inc' ;
   _spew(build_script(), "#!perl\n", "use lib '$dir';\nuse Module::Build::Tiny;\nBuild(\@ARGV);\n");
   make_executable(build_script());
-  _spew( '_build/build_params', _data_dump(\@ARGV) );
+  _spew( '_build/build_params', encode_json(\@ARGV) );
   _spew( "MY$_", _slurp($_)) for grep -f, qw/META.json META.yml/;
 }
 
@@ -90,10 +90,6 @@ sub _spew {
   mkpath(dirname($file));
   open my $fh, '>', $file;
   print {$fh} @_;
-}
-
-sub _data_dump {
-  'do{ my ' . Data::Dumper->new([shift],['x'])->Purity(1)->Dump() . '$x; }'
 }
 
 sub _dist2mod { (my $mod = shift) =~ s{-}{::}g; return $mod; }
