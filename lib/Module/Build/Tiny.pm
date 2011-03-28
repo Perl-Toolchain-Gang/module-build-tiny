@@ -1,103 +1,107 @@
 package Module::Build::Tiny;
 use strict;
 use warnings;
+use Exporter 5.57 'import';
+our $VERSION = '0.006';
+our @EXPORT  = qw/Build Build_PL/;
+
 use CPAN::Meta;
 use Config;
 use JSON::PP qw/encode_json decode_json/;
-use ExtUtils::BuildRC 0 qw/read_config/;
+use ExtUtils::BuildRC qw/read_config/;
 use ExtUtils::Helpers qw/make_executable split_like_shell build_script/;
-use ExtUtils::Install 0 qw/pm_to_blib install/;
-use File::Basename 0 qw/dirname/;
-use File::Find 0 qw/find/;
-use File::Path 0 qw/mkpath rmtree/;
-use File::Spec::Functions 0 qw/catfile catdir rel2abs/;
-use Getopt::Long 0 qw/GetOptions/;
-use Test::Harness 0 qw/runtests/;
-use Exporter 5.57 'import';
-our $VERSION = '0.006';
-our @EXPORT = qw/Build Build_PL/;
+use ExtUtils::Install qw/pm_to_blib install/;
+use File::Basename qw/dirname/;
+use File::Find qw/find/;
+use File::Path qw/mkpath rmtree/;
+use File::Spec::Functions qw/catfile catdir rel2abs/;
+use Getopt::Long qw/GetOptions/;
+use Test::Harness qw/runtests/;
 
-my %install_map = map { +"blib/$_"  => $Config{"installsite$_"} } qw/lib script/;
+my %install_map = map { +"blib/$_" => $Config{"installsite$_"} } qw/lib script/;
 
-my %install_base = ( lib => [qw/lib perl5/], script => [qw/lib bin/] );
+my %install_base = (lib => [qw/lib perl5/], script => [qw/lib bin/]);
 
-my @opts_spec = ( 'install_base:s', 'uninst:i' );
-
-sub _get_options {
-  my ($action, $bpl) = @_;
-  my $rc_opts = read_config();
-  my @env = defined $ENV{PERL_MB_OPT} ? split_like_shell($ENV{PERL_MB_OPT}) : ();
-  unshift @ARGV, map { @$_ } grep { defined } $rc_opts->{'*'}, $bpl, $rc_opts->{$action}, \@env;
-  GetOptions(my $opt = {}, @opts_spec);
-  return $opt;
-}
+my @opts_spec = ('install_base:s', 'uninst:i');
 
 my ($metafile) = grep { -e $_ } qw/META.json META.yml/;
 die "No META information provided\n" if not defined $metafile;
 my $meta = CPAN::Meta->load_file($metafile);
 
 sub build {
-  my %map = map { $_ => "blib/$_" } _files('lib', qr{\.(?:pm|pod)$}), _files('script');
-  pm_to_blib(\%map, 'blib/lib/auto');
-  make_executable($_) for _files('blib/script');
+	my %map = map { $_ => "blib/$_" } _files('lib', qr{\.(?:pm|pod)$}), _files('script');
+	pm_to_blib(\%map, 'blib/lib/auto');
+	make_executable($_) for _files('blib/script');
 }
 
 my %actions = (
 	build => \&build,
-	test => sub {
-	  build(@_);
-	  local @INC = (rel2abs('blib/lib'), @INC);
-	  runtests(grep { !m{/\.} } _files('t', qr{\.t}));
+	test  => sub {
+		build(@_);
+		local @INC = (rel2abs('blib/lib'), @INC);
+		runtests(sort grep { !m{/\.} } _files('t', qr{\.t}));
 	},
 	install => sub {
-	  my %opt = @_;
-	  build(%opt);
-	  install(($opt{install_base} ? _install_base($opt{install_base}) : \%install_map), 1);
+		my %opt = @_;
+		build(%opt);
+		install(($opt{install_base} ? _install_base($opt{install_base}) : \%install_map), 1);
 	},
 	clean => sub {
-	 	rmtree('blib');
+		rmtree('blib');
 	},
 	realclean => sub {
 		rmtree($_) for qw/blib Build _build/;
 	},
 );
 
+sub _get_options {
+	my ($action, $bpl) = @_;
+	my $rc_opts = read_config();
+	my @env = defined $ENV{PERL_MB_OPT} ? split_like_shell($ENV{PERL_MB_OPT}) : ();
+	unshift @ARGV, map { @{$_} } grep { defined } $rc_opts->{'*'}, $bpl, $rc_opts->{$action}, \@env;
+	GetOptions(my $opt = {}, @opts_spec);
+	return $opt;
+}
+
 sub Build(\@) {
-  my $arguments = shift;
-  my $bpl = decode_json(_slurp('_build/build_params'));
-  my $action = defined $arguments->[0] && $arguments->[0] =~ /\A\w+\z/ ? $ARGV[0] : 'build';
-  my $opt = _get_options($action, $bpl);
-  $actions{$action} ? $actions{$action}->(%$opt) : die "No such action '$action'\n";
+	my $arguments = shift;
+	my $bpl       = decode_json(_slurp('_build/build_params'));
+	my $action    = defined $arguments->[0] && $arguments->[0] =~ /\A\w+\z/ ? $ARGV[0] : 'build';
+	my $opt       = _get_options($action, $bpl);
+	$actions{$action} ? $actions{$action}->(%$opt) : die "No such action '$action'\n";
 }
 
 sub Build_PL {
-  printf "Creating new 'Build' script for '%s' version '%s'\n", $meta->name, $meta->version;
-  my $dir = $meta->name eq 'Module-Build-Tiny' ? 'lib' : 'inc' ;
-  _spew(build_script(), "#!perl\n", "use lib '$dir';\nuse Module::Build::Tiny;\nBuild(\@ARGV);\n");
-  make_executable(build_script());
-  _spew( '_build/build_params', encode_json(\@ARGV) );
-  _spew( "MY$_", _slurp($_)) for grep -f, qw/META.json META.yml/;
+	printf "Creating new 'Build' script for '%s' version '%s'\n", $meta->name, $meta->version;
+	my $dir = $meta->name eq 'Module-Build-Tiny' ? 'lib' : 'inc';
+	_spew(build_script(), "#!perl\n", "use lib '$dir';\nuse Module::Build::Tiny;\nBuild(\@ARGV);\n");
+	make_executable(build_script());
+	_spew('_build/build_params', encode_json(\@ARGV));
+	_spew("MY$_", _slurp($_)) for grep { -f } qw/META.json META.yml/;
 }
 
 sub _install_base {
-  return { map { $_ => catdir($_[0], @{ $install_base{$_} }) } keys %install_base };
+	return { map { $_ => catdir($_[0], @{ $install_base{$_} }) } keys %install_base };
 }
 
-sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
+sub _slurp {
+	return do { local (@ARGV, $/) = $_[0]; <> };
+}
+
 sub _spew {
-  my $file = shift;
-  mkpath(dirname($file));
-  open my $fh, '>', $file;
-  print {$fh} @_;
+	my $file = shift;
+	mkpath(dirname($file));
+	open my $fh, '>', $file;
+	print {$fh} @_;
 }
 
 sub _files {
-  my $dir = shift;
-  my @f;
-  return unless -d $dir;
-  my $regex = shift || qr//;
-  find( sub { -f && /$regex/ && push @f, $File::Find::name},$dir);
-  return sort @f;
+	my $dir = shift;
+	my @f;
+	return unless -d $dir;
+	my $regex = shift || qr//;
+	find(sub { -f && /$regex/ && push @f, $File::Find::name }, $dir);
+	return @f;
 }
 
 1;
