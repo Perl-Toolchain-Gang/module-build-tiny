@@ -7,7 +7,6 @@ our @EXPORT  = qw/Build Build_PL/;
 
 use CPAN::Meta;
 use Config;
-use JSON::PP qw/encode_json decode_json/;
 use ExtUtils::BuildRC qw/read_config/;
 use ExtUtils::Helpers qw/make_executable split_like_shell build_script/;
 use ExtUtils::Install qw/pm_to_blib install/;
@@ -16,16 +15,15 @@ use File::Find qw/find/;
 use File::Path qw/mkpath rmtree/;
 use File::Spec::Functions qw/catfile catdir rel2abs/;
 use Getopt::Long qw/GetOptions/;
+use JSON::PP qw/encode_json decode_json/;
 use Test::Harness qw/runtests/;
 
 my %install_map = map { catdir('blib', $_) => $Config{"installsite$_"} } qw/lib script/;
-
 my %install_base = (lib => [qw/lib perl5/], script => [qw/lib bin/]);
 
 my @opts_spec = ('install_base:s', 'uninst:i');
 
-my ($metafile) = grep { -e $_ } qw/META.json META.yml/;
-die "No META information provided\n" if not defined $metafile;
+my ($metafile) = grep { -e $_ } qw/META.json META.yml/ or die "No META information provided\n";
 my $meta = CPAN::Meta->load_file($metafile);
 
 sub build {
