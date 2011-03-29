@@ -21,7 +21,7 @@ use Test::Harness qw/runtests/;
 my %install_map = map { catdir('blib', $_) => $Config{"installsite$_"} } qw/lib script/;
 my %install_base = (lib => [qw/lib perl5/], script => [qw/lib bin/]);
 
-my @opts_spec = ('install_base:s', 'uninst:i');
+my @opts_spec = ('install_base:s', 'uninst:i', 'verbose', 'dry_run');
 
 my ($metafile) = grep { -e $_ } qw/META.json META.yml/ or die "No META information provided\n";
 my $meta = CPAN::Meta->load_file($metafile);
@@ -42,7 +42,7 @@ my %actions = (
 	install => sub {
 		my %opt = @_;
 		build(%opt);
-		install(($opt{install_base} ? _install_base($opt{install_base}) : \%install_map), 1);
+		install(($opt{install_base} ? _install_base($opt{install_base}) : \%install_map), @opt{'verbose','dry_run','uninst'});
 	},
 	clean => sub {
 		rmtree('blib');
