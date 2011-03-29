@@ -39,7 +39,7 @@ my %actions = (
 	test  => sub {
 		build(@_);
 		local @INC = (rel2abs(catdir(qw/blib lib/)), @INC);
-		runtests(sort grep { !m{/\.} } _files('t', qr{\.t}));
+		runtests(sort { $a lt $b } _files('t', qr{\.t$}));
 	},
 	install => sub {
 		my %opt = @_;
