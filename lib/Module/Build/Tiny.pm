@@ -26,22 +26,22 @@ my @opts_spec = ('install_base:s', 'uninst:i', 'verbose', 'dry_run');
 my ($metafile) = grep { -e $_ } qw/META.json META.yml/ or die "No META information provided\n";
 my $meta = CPAN::Meta->load_file($metafile);
 
-sub build {
+sub _build {
 	my %map = map { $_ => catdir('blib', $_) } _files('lib', qr{\.(?:pm|pod)$}), _files('script');
 	pm_to_blib(\%map, catdir(qw/blib lib auto/));
 	make_executable($_) for _files(catdir(qw/blib script/));
 }
 
 my %actions = (
-	build => \&build,
+	build => \&_build,
 	test  => sub {
-		build(@_);
+		_build();
 		local @INC = (rel2abs(catdir(qw/blib lib/)), @INC);
 		runtests(sort { $a lt $b } _files('t', qr{\.t$}));
 	},
 	install => sub {
 		my %opt = @_;
-		build(%opt);
+		_build();
 		install(($opt{install_base} ? _install_base($opt{install_base}) : \%install_map), @opt{'verbose','dry_run','uninst'});
 	},
 	clean => sub {
