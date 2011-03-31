@@ -16,7 +16,7 @@ use File::Path qw/mkpath rmtree/;
 use File::Spec::Functions qw/catfile catdir rel2abs/;
 use Getopt::Long qw/GetOptions/;
 use JSON::PP qw/encode_json decode_json/;
-use Test::Harness qw/runtests/;
+use TAP::Harness;
 
 my %install_map = map { catdir('blib', $_) => $Config{"installsite$_"} } qw/lib script/;
 my %install_base = (lib => [qw/lib perl5/], script => [qw/lib bin/]);
@@ -35,9 +35,10 @@ sub _build {
 my %actions = (
 	build => \&_build,
 	test  => sub {
+		my %opt = @_;
 		_build();
-		local @INC = (rel2abs(catdir(qw/blib lib/)), @INC);
-		runtests(sort { $a lt $b } _files('t', qr{\.t$}));
+		my $tester = TAP::Harness->new({verbosity => $opt{verbose}, lib => rel2abs(catdir(qw/blib lib/)), color => -T STDOUT});
+		$tester->runtests(sort +_files('t', qr{\.t$}));
 	},
 	install => sub {
 		my %opt = @_;
