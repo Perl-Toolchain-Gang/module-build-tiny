@@ -10,9 +10,9 @@ use ExtUtils::BuildRC qw/read_config/;
 use ExtUtils::Helpers qw/make_executable split_like_shell build_script/;
 use ExtUtils::Install qw/pm_to_blib install/;
 use ExtUtils::InstallPaths;
-use File::Basename qw/dirname/;
 use File::Find qw/find/;
-use File::Path qw/mkpath rmtree/;
+use File::Path qw/rmtree/;
+use File::Slurp qw/read_file write_file/;
 use File::Spec::Functions qw/catfile catdir rel2abs/;
 use Getopt::Long qw/GetOptions/;
 use JSON::PP qw/encode_json decode_json/;
@@ -59,7 +59,7 @@ sub _get_options {
 }
 
 sub Build {
-	my $bpl    = decode_json(_slurp('_build_params'));
+	my $bpl    = decode_json(read_file('_build_params'));
 	my $action = @ARGV && $ARGV[0] =~ /\A\w+\z/ ? $ARGV[0] : 'build';
 	$actions{$action} ? $actions{$action}->(_get_options($action, $bpl)) : die "No such action '$action'\n";
 }
@@ -67,21 +67,10 @@ sub Build {
 sub Build_PL {
 	printf "Creating new 'Build' script for '%s' version '%s'\n", $meta->name, $meta->version;
 	my $dir = $meta->name eq 'Module-Build-Tiny' ? 'lib' : 'inc';
-	_spew(build_script(), "#!perl\n", "use lib '$dir';\nuse Module::Build::Tiny;\nBuild();\n");
+	write_file(build_script(), "#!perl\n", "use lib '$dir';\nuse Module::Build::Tiny;\nBuild();\n");
 	make_executable(build_script());
-	_spew(qw/_build_params/, encode_json(\@ARGV));
-	_spew("MY$_", _slurp($_)) for grep { -f } qw/META.json META.yml/;
-}
-
-sub _slurp {
-	return do { local (@ARGV, $/) = $_[0]; <> };
-}
-
-sub _spew {
-	my $file = shift;
-	mkpath(dirname($file));
-	open my $fh, '>', $file;
-	print {$fh} @_;
+	write_file(qw/_build_params/, encode_json(\@ARGV));
+	write_file("MY$_", read_file($_)) for grep { -f } qw/META.json META.yml/;
 }
 
 sub _files {
