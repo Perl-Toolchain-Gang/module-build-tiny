@@ -16,6 +16,7 @@ requires:
   ExtUtils::BuildRC: 0
   ExtUtils::Helpers: 0
   ExtUtils::InstallPaths: 0
+  FIle::Find::Rule: 0
   File::Slurp: 0
 no_index:
   directory:

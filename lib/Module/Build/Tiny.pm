@@ -10,8 +10,8 @@ use ExtUtils::BuildRC qw/read_config/;
 use ExtUtils::Helpers qw/make_executable split_like_shell build_script/;
 use ExtUtils::Install qw/pm_to_blib install/;
 use ExtUtils::InstallPaths;
-use File::Find qw/find/;
 use File::Path qw/rmtree/;
+use File::Find::Rule qw/find/;
 use File::Slurp qw/read_file write_file/;
 use File::Spec::Functions qw/catfile catdir rel2abs/;
 use Getopt::Long qw/GetOptions/;
@@ -22,9 +22,9 @@ my ($metafile) = grep { -e $_ } qw/META.json META.yml/ or die "No META informati
 my $meta = CPAN::Meta->load_file($metafile);
 
 sub _build {
-	my %map = map { $_ => catdir('blib', $_) } _files('lib', qr{\.(?:pm|pod)$}), _files('script');
+	my %map = map { $_ => catfile('blib', $_) } find(file => name => [qw/*.pm *.pod/], in => 'lib'), find(file => in => 'script');
 	pm_to_blib(\%map, catdir(qw/blib lib auto/));
-	make_executable($_) for _files(catdir(qw/blib script/));
+	make_executable($_) for find(file => in => catdir(qw/blib script/));
 }
 
 my %actions = (
@@ -33,7 +33,7 @@ my %actions = (
 		my %opt = @_;
 		_build();
 		my $tester = TAP::Harness->new({verbosity => $opt{verbose}, lib => rel2abs(catdir(qw/blib lib/)), color => -T STDOUT});
-		$tester->runtests(sort +_files('t', qr{\.t$}));
+		$tester->runtests(sort +find(file => name => '*.t', in => 't'));
 	},
 	install => sub {
 		my %opt = @_;
@@ -71,15 +71,6 @@ sub Build_PL {
 	make_executable(build_script());
 	write_file(qw/_build_params/, encode_json(\@ARGV));
 	write_file("MY$_", read_file($_)) for grep { -f } qw/META.json META.yml/;
-}
-
-sub _files {
-	my $dir = shift;
-	my @f;
-	return unless -d $dir;
-	my $regex = shift || qr//;
-	find(sub { -f && /$regex/ && push @f, $File::Find::name }, $dir);
-	return @f;
 }
 
 1;
