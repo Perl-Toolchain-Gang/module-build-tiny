@@ -1,6 +1,6 @@
 /MANIFEST*
 /Build
-/_build
+/_build_params
 /blib
 /Module-Build-Tiny-*
 /MYMETA.*

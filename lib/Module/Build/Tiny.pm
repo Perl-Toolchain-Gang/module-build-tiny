@@ -45,7 +45,7 @@ my %actions = (
 		rmtree('blib');
 	},
 	realclean => sub {
-		rmtree($_) for qw/blib Build _build MYMETA.yml MYMETA.json/;
+		rmtree($_) for qw/blib Build _build_params MYMETA.yml MYMETA.json/;
 	},
 );
 
@@ -59,7 +59,7 @@ sub _get_options {
 }
 
 sub Build {
-	my $bpl    = decode_json(_slurp(catfile(qw/_build build_params/)));
+	my $bpl    = decode_json(_slurp('_build_params'));
 	my $action = @ARGV && $ARGV[0] =~ /\A\w+\z/ ? $ARGV[0] : 'build';
 	$actions{$action} ? $actions{$action}->(_get_options($action, $bpl)) : die "No such action '$action'\n";
 }
@@ -69,7 +69,7 @@ sub Build_PL {
 	my $dir = $meta->name eq 'Module-Build-Tiny' ? 'lib' : 'inc';
 	_spew(build_script(), "#!perl\n", "use lib '$dir';\nuse Module::Build::Tiny;\nBuild();\n");
 	make_executable(build_script());
-	_spew(catfile(qw/_build build_params/), encode_json(\@ARGV));
+	_spew(qw/_build_params/, encode_json(\@ARGV));
 	_spew("MY$_", _slurp($_)) for grep { -f } qw/META.json META.yml/;
 }
 

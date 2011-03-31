@@ -45,7 +45,7 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
   my $line = <$fh>;
 
   like( $line, qr{\A$interpreter}, "Build has shebang line with \$^X" );
-  ok( -f '_build/build_params', "_build/build_params created" );
+  ok( -f '_build_params', "_build_params created" );
 }
 
 #--------------------------------------------------------------------------#
