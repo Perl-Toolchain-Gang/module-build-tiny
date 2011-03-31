@@ -15,6 +15,7 @@ requires:
   CPAN::Meta: 0
   ExtUtils::BuildRC: 0
   ExtUtils::Helpers: 0
+  ExtUtils::InstallPaths: 0
 no_index:
   directory:
     - t

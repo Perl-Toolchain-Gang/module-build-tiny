@@ -6,10 +6,10 @@ our $VERSION = '0.006';
 our @EXPORT  = qw/Build Build_PL/;
 
 use CPAN::Meta;
-use Config;
 use ExtUtils::BuildRC qw/read_config/;
 use ExtUtils::Helpers qw/make_executable split_like_shell build_script/;
 use ExtUtils::Install qw/pm_to_blib install/;
+use ExtUtils::InstallPaths;
 use File::Basename qw/dirname/;
 use File::Find qw/find/;
 use File::Path qw/mkpath rmtree/;
@@ -17,11 +17,6 @@ use File::Spec::Functions qw/catfile catdir rel2abs/;
 use Getopt::Long qw/GetOptions/;
 use JSON::PP qw/encode_json decode_json/;
 use TAP::Harness;
-
-my %install_map = map { catdir('blib', $_) => $Config{"installsite$_"} } qw/lib script/;
-my %install_base = (lib => [qw/lib perl5/], script => [qw/lib bin/]);
-
-my @opts_spec = ('install_base:s', 'uninst:i', 'verbose', 'dry_run');
 
 my ($metafile) = grep { -e $_ } qw/META.json META.yml/ or die "No META information provided\n";
 my $meta = CPAN::Meta->load_file($metafile);
@@ -43,7 +38,8 @@ my %actions = (
 	install => sub {
 		my %opt = @_;
 		_build();
-		install(($opt{install_base} ? _install_base($opt{install_base}) : \%install_map), @opt{'verbose','dry_run','uninst'});
+		my $paths = ExtUtils::InstallPaths->new(%opt, module_name => $meta->name);
+		install($paths->install_map, @opt{'verbose', 'dry_run', 'uninst'});
 	},
 	clean => sub {
 		rmtree('blib');
@@ -58,15 +54,14 @@ sub _get_options {
 	my $rc_opts = read_config();
 	my @env = defined $ENV{PERL_MB_OPT} ? split_like_shell($ENV{PERL_MB_OPT}) : ();
 	unshift @ARGV, map { @{$_} } grep { defined } $rc_opts->{'*'}, $bpl, $rc_opts->{$action}, \@env;
-	GetOptions(my $opt = {}, @opts_spec);
-	return $opt;
+	GetOptions(\my %opt, qw/install_base=s install_path=s% installdirs=s destdir=s prefix=s uninst:1 verbose:1 dry_run:1/);
+	return %opt;
 }
 
 sub Build {
 	my $bpl    = decode_json(_slurp(catfile(qw/_build build_params/)));
 	my $action = @ARGV && $ARGV[0] =~ /\A\w+\z/ ? $ARGV[0] : 'build';
-	my $opt    = _get_options($action, $bpl);
-	$actions{$action} ? $actions{$action}->(%$opt) : die "No such action '$action'\n";
+	$actions{$action} ? $actions{$action}->(_get_options($action, $bpl)) : die "No such action '$action'\n";
 }
 
 sub Build_PL {
@@ -76,10 +71,6 @@ sub Build_PL {
 	make_executable(build_script());
 	_spew(catfile(qw/_build build_params/), encode_json(\@ARGV));
 	_spew("MY$_", _slurp($_)) for grep { -f } qw/META.json META.yml/;
-}
-
-sub _install_base {
-	return { map { $_ => catdir($_[0], @{ $install_base{$_} }) } keys %install_base };
 }
 
 sub _slurp {
@@ -185,20 +176,7 @@ similar fashion from any *.t files (recusively) in F<t/> and from any
 
 =head1 USAGE
 
-These all work pretty much like their Module::Build equivalents.  The
-only configuration options currently supported are:
-
-=over
-
-=item *
-
-install_base
-
-=item *
-
-uninst
-
-=back
+These all work pretty much like their Module::Build equivalents.
 
 =head2 perl Build.PL
 
@@ -207,6 +185,25 @@ uninst
 =head2 Build test
 
 =head2 Build install
+
+This supports the following options:
+
+=over
+
+=item * install_base
+
+=item * installdirs
+
+=item * prefix
+
+=item * install_path
+
+=item * destdir
+
+=item * uninst
+
+=back
+
 
 =head2 Build clean
 
