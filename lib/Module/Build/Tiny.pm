@@ -33,7 +33,7 @@ my %actions = (
 		my %opt = @_;
 		_build();
 		my $tester = TAP::Harness->new({verbosity => $opt{verbose}, lib => rel2abs(catdir(qw/blib lib/)), color => -T STDOUT});
-		$tester->runtests(sort +find(file => name => '*.t', in => 't'));
+		$tester->runtests(sort +find(file => name => '*.t', in => 't'))->has_errors and exit 1;
 	},
 	install => sub {
 		my %opt = @_;
