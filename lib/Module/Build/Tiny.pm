@@ -49,20 +49,16 @@ my %actions = (
 	},
 );
 
-sub _get_options {
-	my ($action, $bpl) = @_;
+sub Build {
+	my $bpl    = decode_json(read_file('_build_params'));
+	my $action = @ARGV && $ARGV[0] =~ /\A\w+\z/ ? shift @ARGV : 'build';
+	die "No such action '$action'\n" if not $actions{$action};
 	my $rc_opts = read_config();
 	my @env = defined $ENV{PERL_MB_OPT} ? split_like_shell($ENV{PERL_MB_OPT}) : ();
 	unshift @ARGV, map { @{$_} } grep { defined } $rc_opts->{'*'}, $bpl, $rc_opts->{$action}, \@env;
 	GetOptions(\my %opt, qw/install_base=s install_path=s% installdirs=s destdir=s prefix=s config=s% uninst:1 verbose:1 dry_run:1/);
 	$opt{config} = ExtUtils::Config->new($opt{config});
-	return %opt;
-}
-
-sub Build {
-	my $bpl    = decode_json(read_file('_build_params'));
-	my $action = @ARGV && $ARGV[0] =~ /\A\w+\z/ ? $ARGV[0] : 'build';
-	$actions{$action} ? $actions{$action}->(_get_options($action, $bpl)) : die "No such action '$action'\n";
+	$actions{$action}->(%opt);
 }
 
 sub Build_PL {
