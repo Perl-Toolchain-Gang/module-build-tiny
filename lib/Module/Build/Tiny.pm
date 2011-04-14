@@ -22,8 +22,9 @@ my ($metafile) = grep { -e $_ } qw/META.json META.yml/ or die "No META informati
 my $meta = CPAN::Meta->load_file($metafile);
 
 sub _build {
-	my %map = map { $_ => catfile('blib', $_) } find(file => name => [qw/*.pm *.pod/], in => 'lib'), find(file => in => 'script');
-	pm_to_blib(\%map, catdir(qw/blib lib auto/));
+	my @modules = find(file => name => [qw/*.pm *.pod/], in => 'lib');
+	my @scripts = find(file => name => '*', in => 'script');
+	pm_to_blib({ map { $_ => catfile('blib', $_) } @modules, @scripts }, catdir(qw/blib lib auto/));
 	make_executable($_) for find(file => in => catdir(qw/blib script/));
 }
 
@@ -64,7 +65,7 @@ sub Build {
 sub Build_PL {
 	printf "Creating new 'Build' script for '%s' version '%s'\n", $meta->name, $meta->version;
 	my $dir = $meta->name eq 'Module-Build-Tiny' ? 'lib' : 'inc';
-	write_file(build_script(), "#!perl\n", "use lib '$dir';\nuse Module::Build::Tiny;\nBuild();\n");
+	write_file(build_script(), "#!perl\nuse lib '$dir';\nuse Module::Build::Tiny;\nBuild();\n");
 	make_executable(build_script());
 	write_file(qw/_build_params/, encode_json(\@ARGV));
 	write_file("MY$_", read_file($_)) for grep { -f } qw/META.json META.yml/;
