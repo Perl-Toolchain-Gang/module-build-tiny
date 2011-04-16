@@ -7,10 +7,10 @@ our @EXPORT  = qw/Build Build_PL/;
 
 use CPAN::Meta;
 use ExtUtils::BuildRC qw/read_config/;
-use ExtUtils::Helpers qw/make_executable split_like_shell build_script/;
+use ExtUtils::Helpers qw/make_executable split_like_shell build_script manify man1_pagename man3_pagename/;
 use ExtUtils::Install qw/pm_to_blib install/;
 use ExtUtils::InstallPaths;
-use File::Path qw/rmtree/;
+use File::Path qw/rmtree mkpath/;
 use File::Find::Rule qw/find/;
 use File::Slurp qw/read_file write_file/;
 use File::Spec::Functions qw/catfile catdir rel2abs/;
@@ -22,23 +22,26 @@ my ($metafile) = grep { -e $_ } qw/META.json META.yml/ or die "No META informati
 my $meta = CPAN::Meta->load_file($metafile);
 
 sub _build {
+	my %opt = @_;
 	my @modules = find(file => name => [qw/*.pm *.pod/], in => 'lib');
 	my @scripts = find(file => name => '*', in => 'script');
 	pm_to_blib({ map { $_ => catfile('blib', $_) } @modules, @scripts }, catdir(qw/blib lib auto/));
 	make_executable($_) for find(file => in => catdir(qw/blib script/));
+	manify($_, catdir('blib', 'bindoc', man1_pagename($_)), 1, \%opt) for @scripts;
+	manify($_, catdir('blib', 'libdoc', man3_pagename($_)), 3, \%opt) for @modules;
 }
 
 my %actions = (
 	build => \&_build,
 	test  => sub {
 		my %opt = @_;
-		_build();
+		_build(%opt);
 		my $tester = TAP::Harness->new({verbosity => $opt{verbose}, lib => rel2abs(catdir(qw/blib lib/)), color => -t STDOUT});
 		$tester->runtests(sort +find(file => name => '*.t', in => 't'))->has_errors and exit 1;
 	},
 	install => sub {
 		my %opt = @_;
-		_build();
+		_build(%opt);
 		my $paths = ExtUtils::InstallPaths->new(%opt, module_name => $meta->name);
 		install($paths->install_map, @opt{'verbose', 'dry_run', 'uninst'});
 	},
