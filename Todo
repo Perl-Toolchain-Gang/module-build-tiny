@@ -1,15 +1,7 @@
-Must:
 * test exit code from failing test
 * test _prereq
 * test _build_params
 * write docs
 * write tests
-* add installdirs and install_path
 * replace author actions with Dist::Zilla integration
-
-Maybe:
-* support alternate licenses as params to import()
-* create README
-* create LICENSE
-* sharedir
-* error on --prefix
+* sharedir?

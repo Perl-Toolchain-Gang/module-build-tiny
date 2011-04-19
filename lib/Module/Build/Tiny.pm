@@ -86,16 +86,7 @@ Module::Build::Tiny - A tiny replacement for Module::Build
 
 =head1 SYNOPSIS
 
- # First, install Module::Build::Tiny
-
- # Then copy this file into inc
-
- # Then create this Build.PL
- use lib 'inc';
- use Module::Build::Tiny;
- Build_PL();
-
- # That's it!
+ # XXX
 
 =head1 DESCRIPTION
 
@@ -105,57 +96,32 @@ Traditionally, Build.PL uses Module::Build as the underlying build system.
 This module provides a simple, lightweight, drop-in replacement.
 
 Whereas Module::Build has over 6,700 lines of code; this module has under
-200, yet supports the features needed by most pure-Perl distributions along
-with some useful automation for lazy programmers.  Plus, it bundles itself
-with the distribution, so end users don't even need to have it (or
-Module::Build) installed.
+100, yet supports the features needed by most pure-Perl distributions.
 
 =head2 Supported
 
   * Pure Perl distributions
   * Recursive test files
-  * Automatic 'requires' and 'build_requires' detection (see below)
-  * Automatic MANIFEST generation
-  * Automatic MANIFEST.SKIP generation (if not supplied)
-  * Automatically bundles itself in inc/
   * MYMETA
+  * Man page generation
 
 =head2 Not Supported
 
   * Dynamic prerequisites
   * Generated code from PL files
   * Building XS or C
-  * Manpage or HTML documentation generation
-  * Subclassing Module::Build::Tiny
-  * Licenses in META.yml other than 'perl'
+  * HTML documentation generation
+  * Extending Module::Build::Tiny
 
 =head2 Other limitations
 
-  * May only work on a Unix-like or Windows OS
   * This is an experimental module -- use at your own risk
 
 =head2 Directory structure
 
 Your .pm and .pod files must be in F<lib/>.  Any executables must be in
-F<bin/>.  Test files must be in F<t/>.  Bundled test modules must be in
+F<script/>.  Test files must be in F<t/>.  Bundled test modules must be in
 F<t/lib/>.
-
-=head2 Automatic prequisite detection
-
-Prerequisites of type 'requires' are automatically detected in *.pm files
-in F<lib/> from lines that contain a C<use()> function with a version
-number.  E.g.:
-
-  use Carp 0 qw/carp croak/;
-  use File::Spec 0.86 ();
-
-Lines may have leading white space.  You may not have more than one
-C<use()> function per line.  No other C<use()> or C<require()> functions
-are detected.
-
-Prerequisites of type 'build_requires' are automatically detected in a
-similar fashion from any *.t files (recusively) in F<t/> and from any
-*.pm files in F<t/lib/>.
 
 =head1 USAGE
 
@@ -163,7 +129,7 @@ These all work pretty much like their Module::Build equivalents.
 
 =head2 perl Build.PL
 
-=head2 Build
+=head2 Build [ build ] 
 
 =head2 Build test
 
@@ -187,14 +153,9 @@ This supports the following options:
 
 =back
 
-
 =head2 Build clean
 
 =head2 Build realclean
-
-=head2 Build distdir
-
-=head2 Build dist
 
 =head1 CONFIG FILE AND ENVIRONMENT
 
@@ -212,7 +173,7 @@ L<Module::Build>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2009 by David A. Golden, Leon Timmermans
+Copyright (C) 2009 - 2011 by David A. Golden, Leon Timmermans
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.10.0 or,
