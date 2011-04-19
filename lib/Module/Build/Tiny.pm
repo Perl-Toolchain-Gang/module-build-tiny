@@ -10,7 +10,7 @@ use ExtUtils::BuildRC qw/read_config/;
 use ExtUtils::Helpers qw/make_executable split_like_shell build_script manify man1_pagename man3_pagename/;
 use ExtUtils::Install qw/pm_to_blib install/;
 use ExtUtils::InstallPaths;
-use File::Path qw/rmtree mkpath/;
+use File::Path qw/rmtree/;
 use File::Find::Rule qw/find/;
 use File::Slurp qw/read_file write_file/;
 use File::Spec::Functions qw/catfile catdir rel2abs/;
@@ -46,10 +46,12 @@ my %actions = (
 		install($paths->install_map, @opt{'verbose', 'dry_run', 'uninst'});
 	},
 	clean => sub {
-		rmtree('blib');
+		my %opt = @_;
+		rmtree('blib', $opt{verbose});
 	},
 	realclean => sub {
-		rmtree($_) for qw/blib Build _build_params MYMETA.yml MYMETA.json/;
+		my %opt = @_;
+		rmtree($_, $opt{verbose}) for qw/blib Build _build_params MYMETA.yml MYMETA.json/;
 	},
 );
 
