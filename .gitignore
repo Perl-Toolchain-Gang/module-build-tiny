@@ -4,3 +4,4 @@
 /blib
 /Module-Build-Tiny-*
 /MYMETA.*
+.build/

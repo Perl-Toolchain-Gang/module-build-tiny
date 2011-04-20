@@ -2,7 +2,6 @@ package Module::Build::Tiny;
 use strict;
 use warnings;
 use Exporter 5.57 'import';
-our $VERSION = '0.006';
 our @EXPORT  = qw/Build Build_PL/;
 
 use CPAN::Meta;
