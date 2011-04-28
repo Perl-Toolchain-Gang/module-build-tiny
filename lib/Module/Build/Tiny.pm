@@ -85,7 +85,8 @@ Module::Build::Tiny - A tiny replacement for Module::Build
 
 =head1 SYNOPSIS
 
- # XXX
+ use Module::Build::Tiny;
+ BuildPL();
 
 =head1 DESCRIPTION
 
@@ -155,6 +156,10 @@ This supports the following options:
 =head2 Build clean
 
 =head2 Build realclean
+
+=head1 AUTHORING
+
+This module doesn't support authoring. To develop modules using Module::Build::Tiny, usage of L<Dist::Zilla::Plugin::ModuleBuildTiny> is recommended.
 
 =head1 CONFIG FILE AND ENVIRONMENT
 
