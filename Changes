@@ -1,4 +1,9 @@
-Revision history for Acme::Module::Build::Tiny
+Revision history for Module::Build::Tiny
+
+{{$NEXT}}
+         Complete rewrite of Acme::Module::Build::Tiny into Module::Build::Tiny
+          * Now uses dependencies
+          * Either implements a feature correctly or not at all
 
 0.05 - Fri Oct  8 15:19:31 EDT 2010
 
