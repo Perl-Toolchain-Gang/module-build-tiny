@@ -1,6 +1,8 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+
+0.006     2011-04-29 11:56:37 Europe/Bucharest
          Complete rewrite of Acme::Module::Build::Tiny into Module::Build::Tiny
           * Now uses dependencies
           * Either implements a feature correctly or not at all
