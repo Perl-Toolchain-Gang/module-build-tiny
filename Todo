@@ -3,5 +3,4 @@
 * test _build_params
 * write docs
 * write tests
-* replace author actions with Dist::Zilla integration
 * sharedir?
