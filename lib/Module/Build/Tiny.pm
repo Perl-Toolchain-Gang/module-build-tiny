@@ -184,4 +184,9 @@ it under the same terms as Perl itself, either Perl version 5.10.0 or,
 at your option, any later version of Perl 5 you may have available.
 
 =cut
+
+=for Pod::Coverage
+Build_PL
+=end
+
 # vi:et:sts=2:sw=2:ts=2
