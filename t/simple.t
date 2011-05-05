@@ -1,3 +1,4 @@
+#! perl
 use strict;
 use warnings;
 use Config;
@@ -62,21 +63,17 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
   my $pmfile = _mod2pm($dist->name);
   ok( -f 'blib/lib/' . $pmfile, "$dist->{name} copied to blib" );
   is( _slurp("lib/$pmfile"), _slurp("blib/lib/$pmfile"), "pm contents are correct" );
-  ok( ! -w "blib/lib/$pmfile", "pm file in blib is readonly" );
+  ok( ! ((stat "blib/lib/$pmfile")[2] & 0222), "pm file in blib is readonly" );
 
   # check bin
   ok( -f 'blib/script/simple', "bin/simple copied to blib" );
   like( _slurp("blib/script/simple"), '/' .quotemeta(_slurp("blib/script/simple")) . "/",
     "blib/script/simple contents are correct" );
-  {
-    local $TODO = 'What to do about this?';
-    ok( ! -w "blib/script/simple", "blib/script/simple is readonly" );
-  }
+  ok( ! ((stat "blib/script/simple")[2] & 0222), "blib/script/simple is readonly" );
   ok( -x "blib/script/simple", "blib/script/simple is executable" );
   open my $fh, "<", "blib/script/simple";
   my $line = <$fh>;
   like( $line, qr{\A$interpreter}, "blib/script/simple has shebang line with \$^X" );
 
 }
-
 
