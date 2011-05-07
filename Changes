@@ -1,6 +1,8 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+
+0.008     2011-05-07 11:25:39 Europe/Amsterdam
           Removed clean and realclean commands
           Fix writability for scripts and modules
 
