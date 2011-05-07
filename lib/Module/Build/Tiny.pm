@@ -13,7 +13,7 @@ use File::Find::Rule qw/find/;
 use File::Slurp qw/read_file write_file/;
 use File::Spec::Functions qw/catfile catdir rel2abs/;
 use Getopt::Long qw/GetOptions/;
-use JSON::PP 2 qw/encode_json decode_json/;
+use JSON 2 qw/encode_json decode_json/;
 use TAP::Harness;
 
 my ($metafile) = grep { -e $_ } qw/META.json META.yml/ or die "No META information provided\n";
