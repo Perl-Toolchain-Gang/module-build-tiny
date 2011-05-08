@@ -8,7 +8,7 @@ use CPAN::Meta;
 use ExtUtils::BuildRC 0.003 qw/read_config/;
 use ExtUtils::Helpers 0.007 qw/make_executable split_like_shell build_script manify man1_pagename man3_pagename/;
 use ExtUtils::Install qw/pm_to_blib install/;
-use ExtUtils::InstallPaths;
+use ExtUtils::InstallPaths 0.002;
 use File::Find::Rule qw/find/;
 use File::Slurp qw/read_file write_file/;
 use File::Spec::Functions qw/catfile catdir rel2abs/;
@@ -41,7 +41,7 @@ my %actions = (
 	install => sub {
 		my %opt = @_;
 		_build(%opt);
-		my $paths = ExtUtils::InstallPaths->new(%opt, module_name => $meta->name);
+		my $paths = ExtUtils::InstallPaths->new(%opt, dist_name => $meta->name);
 		install($paths->install_map, @opt{'verbose', 'dry_run', 'uninst'});
 	},
 );
