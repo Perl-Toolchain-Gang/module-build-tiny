@@ -22,6 +22,7 @@ my $meta = CPAN::Meta->load_file($metafile);
 my %actions = (
 	build => sub {
 		my %opt = @_;
+		system($^X, $_) and die "$_ returned $?\n" for find(file => name => '*.PL', in => 'lib');
 		my %modules = map { $_ => catfile('blib', $_) } find(file => name => [qw/*.pm *.pod/], in => 'lib');
 		my %scripts = map { $_ => catfile('blib', $_) } find(file => name => '*', in => 'script');
 		pm_to_blib({ %modules, %scripts }, catdir(qw/blib lib auto/));
@@ -101,6 +102,8 @@ than 70, yet supports the features needed by most pure-Perl distributions.
 
 =item * Man page generation
 
+=item * Generated code from PL files
+
 =back
 
 =head2 Not Supported
@@ -108,8 +111,6 @@ than 70, yet supports the features needed by most pure-Perl distributions.
 =over 4
 
 =item * Dynamic prerequisites
-
-=item * Generated code from PL files
 
 =item * Building XS or C
 
