@@ -19,29 +19,27 @@ use TAP::Harness;
 my ($metafile) = grep { -e $_ } qw/META.json META.yml/ or die "No META information provided\n";
 my $meta = CPAN::Meta->load_file($metafile);
 
-sub _build {
-	my %opt = @_;
-	my %modules = map { $_ => catfile('blib', $_) } find(file => name => [qw/*.pm *.pod/], in => 'lib');
-	my %scripts = map { $_ => catfile('blib', $_) } find(file => name => '*', in => 'script');
-	pm_to_blib({ %modules, %scripts }, catdir(qw/blib lib auto/));
-	make_executable($_) for values %scripts;
-	manify($_, catfile('blib', 'bindoc', man1_pagename($_)), 1, \%opt) for keys %scripts;
-	manify($_, catfile('blib', 'libdoc', man3_pagename($_)), 3, \%opt) for keys %modules;
-	chmod oct 444, $_ for values %modules;
-	chmod oct 555, $_ for values %scripts;
-}
-
 my %actions = (
-	build => \&_build,
+	build => sub {
+		my %opt = @_;
+		my %modules = map { $_ => catfile('blib', $_) } find(file => name => [qw/*.pm *.pod/], in => 'lib');
+		my %scripts = map { $_ => catfile('blib', $_) } find(file => name => '*', in => 'script');
+		pm_to_blib({ %modules, %scripts }, catdir(qw/blib lib auto/));
+		make_executable($_) for values %scripts;
+		manify($_, catfile('blib', 'bindoc', man1_pagename($_)), 1, \%opt) for keys %scripts;
+		manify($_, catfile('blib', 'libdoc', man3_pagename($_)), 3, \%opt) for keys %modules;
+		chmod oct 444, $_ for values %modules;
+		chmod oct 555, $_ for values %scripts;
+	},
 	test  => sub {
 		my %opt = @_;
-		_build(%opt);
+		die "Must run `./Build build` first\n" if not -d 'blib';
 		my $tester = TAP::Harness->new({verbosity => $opt{verbose}, lib => rel2abs(catdir(qw/blib lib/)), color => -t STDOUT});
 		$tester->runtests(sort +find(file => name => '*.t', in => 't'))->has_errors and exit 1;
 	},
 	install => sub {
 		my %opt = @_;
-		_build(%opt);
+		die "Must run `./Build build` first\n" if not -d 'blib';
 		my $paths = ExtUtils::InstallPaths->new(%opt, dist_name => $meta->name);
 		install($paths->install_map, @opt{'verbose', 'dry_run', 'uninst'});
 	},
