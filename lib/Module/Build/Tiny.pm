@@ -27,7 +27,8 @@ sub _build {
 	make_executable($_) for find(file => in => catdir(qw/blib script/));
 	manify($_, catfile('blib', 'bindoc', man1_pagename($_)), 1, \%opt) for @scripts;
 	manify($_, catfile('blib', 'libdoc', man3_pagename($_)), 3, \%opt) for @modules;
-	chmod +(stat $_)[2] & ~0222, $_ for map { catfile('blib', $_) } @scripts, @modules;
+	chmod oct 444, $_ for map { catfile('blib', $_) } @modules;
+	chmod oct 555, $_ for map { catfile('blib', $_) } @scripts;
 }
 
 my %actions = (

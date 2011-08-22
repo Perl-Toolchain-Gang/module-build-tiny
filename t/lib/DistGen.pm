@@ -208,7 +208,7 @@ sub regen {
       my $real_filename = $self->_real_filename( $file );
       my $fullname = File::Spec->catfile( $dist_dirname, $real_filename );
       if ( -e $fullname ) {
-        1 while unlink( $fullname );
+        1 while File::Path::rmtree($fullname, 0, 0);
       }
       print "Unlinking pending file '$file'\n" if $VERBOSE;
       delete( $self->{pending}{remove}{$file} );
