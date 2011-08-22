@@ -88,33 +88,44 @@ to drive distribution configuration, build, test and installation.
 Traditionally, Build.PL uses Module::Build as the underlying build system.
 This module provides a simple, lightweight, drop-in replacement.
 
-Whereas Module::Build has over 6,700 lines of code; this module has under
-100, yet supports the features needed by most pure-Perl distributions.
+Whereas Module::Build has over 6,700 lines of code; this module has less
+than 70, yet supports the features needed by most pure-Perl distributions.
 
 =head2 Supported
 
-  * Pure Perl distributions
-  * Recursive test files
-  * MYMETA
-  * Man page generation
+=over 4
+
+=item * Pure Perl distributions
+
+=item * Recursive test files
+
+=item * MYMETA
+
+=item * Man page generation
+
+=back
 
 =head2 Not Supported
 
-  * Dynamic prerequisites
-  * Generated code from PL files
-  * Building XS or C
-  * HTML documentation generation
-  * Extending Module::Build::Tiny
+=over 4
 
-=head2 Other limitations
+=item * Dynamic prerequisites
 
-  * This is an experimental module -- use at your own risk
+=item * Generated code from PL files
+
+=item * Building XS or C
+
+=item * HTML documentation generation
+
+=item * Extending Module::Build::Tiny
+
+=back
 
 =head2 Directory structure
 
 Your .pm and .pod files must be in F<lib/>.  Any executables must be in
-F<script/>.  Test files must be in F<t/>.  Bundled test modules must be in
-F<t/lib/>.
+F<script/>.  Test files must be in F<t/>.
+
 
 =head1 USAGE
 
@@ -145,10 +156,6 @@ This supports the following options:
 =item * uninst
 
 =back
-
-=head2 Build clean
-
-=head2 Build realclean
 
 =head1 AUTHORING
 
@@ -181,5 +188,7 @@ at your option, any later version of Perl 5 you may have available.
 =for Pod::Coverage
 Build_PL
 =end
+
+=cut
 
 # vi:et:sts=2:sw=2:ts=2
