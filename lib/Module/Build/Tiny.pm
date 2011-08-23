@@ -2,7 +2,7 @@ package Module::Build::Tiny;
 use strict;
 use warnings;
 use Exporter 5.57 'import';
-our @EXPORT  = qw/Build Build_PL/;
+our @EXPORT = qw/Build Build_PL/;
 
 use CPAN::Meta;
 use ExtUtils::BuildRC 0.003 qw/read_config/;
@@ -32,7 +32,7 @@ my %actions = (
 		chmod oct 444, $_ for values %modules;
 		chmod oct 555, $_ for values %scripts;
 	},
-	test  => sub {
+	test => sub {
 		my %opt = @_;
 		die "Must run `./Build build` first\n" if not -d 'blib';
 		my $tester = TAP::Harness->new({verbosity => $opt{verbose}, lib => rel2abs(catdir(qw/blib lib/)), color => -t STDOUT});
@@ -42,12 +42,12 @@ my %actions = (
 		my %opt = @_;
 		die "Must run `./Build build` first\n" if not -d 'blib';
 		my $paths = ExtUtils::InstallPaths->new(%opt, dist_name => $meta->name);
-		install($paths->install_map, @opt{'verbose', 'dry_run', 'uninst'});
+		install($paths->install_map, @opt{qw/verbose dry_run uninst/});
 	},
 );
 
 sub Build {
-	my $bpl    = decode_json(read_file('_build_params'));
+	my $bpl = decode_json(read_file('_build_params'));
 	my $action = @ARGV && $ARGV[0] =~ /\A\w+\z/ ? shift @ARGV : 'build';
 	die "No such action '$action'\n" if not $actions{$action};
 	my $rc_opts = read_config();
