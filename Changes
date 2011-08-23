@@ -1,6 +1,10 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+          Don't let the test and install actions depend on build (was rather broken)
+          Add support for *.PL files
+          chmod more robustly (may fix bugs on Windows)
+          Various documentation updates
 
 0.009     2011-05-08 12:05:01 Europe/Amsterdam
           Install packlists to the right location
