@@ -5,11 +5,9 @@ use Config;
 use File::pushd 1.00 qw(tempd);
 use File::Spec 0 ();
 use Capture::Tiny 0 qw(capture);
-use Test::More 0.86;
+use Test::More 0.88;
 use lib 't/lib';
 use DistGen qw/undent/;
-
-plan tests => 16;
 
 #--------------------------------------------------------------------------#
 # fixtures
@@ -40,7 +38,13 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
 
 {
   ok( ! system($^X, "Build.PL"), "Ran Build.PL");
-  ok( -f 'Build' && -x _, "Build created and executable" );
+  ok( -f 'Build', "Build created" );
+  if ($^O eq 'MSWin32') {
+    ok( -f 'Build.bat', 'Build is executable');
+  }
+  else {
+    ok( -x 'Build', "Build is executable" );
+  }
 
   open my $fh, "<", "Build";
   my $line = <$fh>;
@@ -67,13 +71,18 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
 
   # check bin
   ok( -f 'blib/script/simple', "bin/simple copied to blib" );
-  like( _slurp("blib/script/simple"), '/' .quotemeta(_slurp("blib/script/simple")) . "/",
-    "blib/script/simple contents are correct" );
-  ok( ! ((stat "blib/script/simple")[2] & 0222), "blib/script/simple is readonly" );
-  ok( -x "blib/script/simple", "blib/script/simple is executable" );
-  open my $fh, "<", "blib/script/simple";
-  my $line = <$fh>;
-  like( $line, qr{\A$interpreter}, "blib/script/simple has shebang line with \$^X" );
-
+  like( _slurp("blib/script/simple"), '/' .quotemeta(_slurp("blib/script/simple")) . "/", "blib/script/simple contents are correct" );
+  if ($^O eq 'MSWin32') {
+    ok( -f "blib/script/simple.bat", "blib/script/simple is executable");
+  }
+  else {
+    ok( -x "blib/script/simple", "blib/script/simple is executable" );
+  }
+  if ($^O ne 'MSWin32') {
+    open my $fh, "<", "blib/script/simple";
+    my $line = <$fh>;
+    like( $line, qr{\A$interpreter}, "blib/script/simple has shebang line with \$^X" );
+  }
 }
 
+done_testing;
