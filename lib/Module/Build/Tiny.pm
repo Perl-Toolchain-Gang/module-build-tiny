@@ -22,15 +22,13 @@ my $meta = CPAN::Meta->load_file($metafile);
 my %actions = (
 	build => sub {
 		my %opt = @_;
-		system($^X, $_) and die "$_ returned $?\n" for find(file => name => '*.PL', in => 'lib');
+		system $^X, $_ and die "$_ returned $?\n" for find(file => name => '*.PL', in => 'lib');
 		my %modules = map { $_ => catfile('blib', $_) } find(file => name => [qw/*.pm *.pod/], in => 'lib');
 		my %scripts = map { $_ => catfile('blib', $_) } find(file => name => '*', in => 'script');
 		pm_to_blib({ %modules, %scripts }, catdir(qw/blib lib auto/));
 		make_executable($_) for values %scripts;
 		manify($_, catfile('blib', 'bindoc', man1_pagename($_)), 1, \%opt) for keys %scripts;
 		manify($_, catfile('blib', 'libdoc', man3_pagename($_)), 3, \%opt) for keys %modules;
-		chmod oct 444, $_ for values %modules;
-		chmod oct 555, $_ for values %scripts;
 	},
 	test => sub {
 		my %opt = @_;
