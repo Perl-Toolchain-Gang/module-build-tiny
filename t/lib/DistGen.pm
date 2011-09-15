@@ -2,8 +2,6 @@ package DistGen;
 
 use strict;
 
-use vars qw( $VERSION $VERBOSE @EXPORT_OK);
-
 our $VERSION = '0.01';
 our $VERBOSE = 0;
 
@@ -17,14 +15,9 @@ use File::Spec 0 ();
 use File::Temp 0 ();
 use IO::File 0 ();
 use Data::Dumper 0 ();
+use Exporter 5.57 'import';
 
-BEGIN {
-  require Exporter;
-  *{import} = \&Exporter::import;
-  @EXPORT_OK = qw(
-    undent
-  );
-}
+our @EXPORT_OK = qw(undent);
 
 sub undent {
   my ($string) = @_;
