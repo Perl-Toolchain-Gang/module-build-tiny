@@ -6,6 +6,7 @@ our @EXPORT = qw/Build Build_PL/;
 
 use CPAN::Meta;
 use ExtUtils::BuildRC 0.003 qw/read_config/;
+use ExtUtils::Config 0.003;
 use ExtUtils::Helpers 0.007 qw/make_executable split_like_shell build_script manify man1_pagename man3_pagename/;
 use ExtUtils::Install qw/pm_to_blib install/;
 use ExtUtils::InstallPaths 0.002;
@@ -27,8 +28,11 @@ my %actions = (
 		my %scripts = map { $_ => catfile('blib', $_) } find(file => name => '*', in => 'script');
 		pm_to_blib({ %modules, %scripts }, catdir(qw/blib lib auto/));
 		make_executable($_) for values %scripts;
-		manify($_, catfile('blib', 'bindoc', man1_pagename($_)), 1, \%opt) for keys %scripts;
-		manify($_, catfile('blib', 'libdoc', man3_pagename($_)), 3, \%opt) for keys %modules;
+
+		if ($opt{config}->exists('installman3dir')) {
+			manify($_, catfile('blib', 'bindoc', man1_pagename($_)), 1, \%opt) for keys %scripts;
+			manify($_, catfile('blib', 'libdoc', man3_pagename($_)), 3, \%opt) for keys %modules;
+		}
 	},
 	test => sub {
 		my %opt = @_;
