@@ -73,9 +73,7 @@ sub Build_PL {
 
 __END__
 
-=head1 NAME
-
-Module::Build::Tiny - A tiny replacement for Module::Build
+#ABSTRACT: A tiny replacement for Module::Build
 
 =head1 SYNOPSIS
 
