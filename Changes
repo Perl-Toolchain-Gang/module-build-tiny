@@ -1,6 +1,7 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+          Fix Module::Build::Tiny on Windows
 
 0.010     2011-08-23 19:46:29 Europe/Amsterdam
           Don't let the test and install actions depend on build (was rather broken)
