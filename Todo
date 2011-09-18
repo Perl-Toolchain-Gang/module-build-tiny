@@ -1,6 +1,4 @@
-* test exit code from failing test
-* test _prereq
-* test _build_params
-* write docs
 * write tests
-* sharedir?
+  - _build_params?
+* add XS support
+* add HTML support
