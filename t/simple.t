@@ -6,6 +6,7 @@ use File::pushd 1.00 qw(tempd);
 use File::Spec 0 ();
 use Capture::Tiny 0 qw(capture);
 use Test::More 0.88;
+use Test::Exception;
 use lib 't/lib';
 use DistGen qw/undent/;
 
@@ -37,7 +38,7 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
 #--------------------------------------------------------------------------#
 
 {
-  ok( ! system($^X, "Build.PL"), "Ran Build.PL");
+  is(system($^X, "Build.PL"), 0, "Ran Build.PL");
   ok( -f 'Build', "Build created" );
   if ($^O eq 'MSWin32') {
     ok( -f 'Build.bat', 'Build is executable');
@@ -58,7 +59,7 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
 #--------------------------------------------------------------------------#
 
 {
-  ok( capture { ! system($^X, "Build") }, "Ran Build");
+  lives_ok { capture { system($^X, "Build") and die $! } } "Ran Build";
   ok( -d 'blib',        "created blib" );
   ok( -d 'blib/lib',    "created blib/lib" );
   ok( -d 'blib/script', "created blib/script" );
@@ -67,7 +68,7 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
   my $pmfile = _mod2pm($dist->name);
   ok( -f 'blib/lib/' . $pmfile, "$dist->{name} copied to blib" );
   is( _slurp("lib/$pmfile"), _slurp("blib/lib/$pmfile"), "pm contents are correct" );
-  ok( ! ((stat "blib/lib/$pmfile")[2] & 0222), "pm file in blib is readonly" );
+  is((stat "blib/lib/$pmfile")[2] & 0222, 0, "pm file in blib is readonly" );
 
   # check bin
   ok( -f 'blib/script/simple', "bin/simple copied to blib" );
@@ -78,6 +79,7 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
   else {
     ok( -x "blib/script/simple", "blib/script/simple is executable" );
   }
+  is((stat "blib/script/simple")[2] & 0222, 0, "script in blib is readonly" );
   if ($^O ne 'MSWin32') {
     open my $fh, "<", "blib/script/simple";
     my $line = <$fh>;

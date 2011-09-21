@@ -7,7 +7,7 @@ our @EXPORT = qw/Build Build_PL/;
 use CPAN::Meta;
 use ExtUtils::BuildRC 0.003 qw/read_config/;
 use ExtUtils::Config 0.003;
-use ExtUtils::Helpers 0.007 qw/make_executable split_like_shell build_script manify man1_pagename man3_pagename/;
+use ExtUtils::Helpers 0.010 qw/make_executable split_like_shell build_script manify man1_pagename man3_pagename/;
 use ExtUtils::Install qw/pm_to_blib install/;
 use ExtUtils::InstallPaths 0.002;
 use File::Find::Rule qw/find/;
