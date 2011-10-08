@@ -5,16 +5,16 @@ use strict;
 our $VERSION = '0.01';
 our $VERBOSE = 0;
 
-use Carp 0;
+use Carp;
 
-use Cwd 0 ();
-use File::Basename 0 ();
-use File::Find 0 ();
-use File::Path 0 ();
-use File::Spec 0 ();
-use File::Temp 0 ();
-use IO::File 0 ();
-use Data::Dumper 0 ();
+use Cwd ();
+use File::Basename ();
+use File::Find ();
+use File::Path ();
+use File::Spec ();
+use File::Temp ();
+use IO::File ();
+use Data::Dumper ();
 use Exporter 5.57 'import';
 
 our @EXPORT_OK = qw(undent);
