@@ -17,8 +17,10 @@ use Getopt::Long qw/GetOptions/;
 use JSON 2 qw/encode_json decode_json/;
 use TAP::Harness;
 
-my ($metafile) = grep { -e $_ } qw/META.json META.yml/ or die "No META information provided\n";
-my $meta = CPAN::Meta->load_file($metafile);
+sub _get_meta {
+	my ($metafile) = grep { -e $_ } qw/META.json META.yml/ or die "No META information provided\n";
+	return CPAN::Meta->load_file($metafile);
+}
 
 my %actions = (
 	build => sub {
@@ -43,7 +45,7 @@ my %actions = (
 	install => sub {
 		my %opt = @_;
 		die "Must run `./Build build` first\n" if not -d 'blib';
-		my $paths = ExtUtils::InstallPaths->new(%opt, dist_name => $meta->name);
+		my $paths = ExtUtils::InstallPaths->new(%opt, dist_name => $opt{meta}->name);
 		install($paths->install_map, @opt{qw/verbose dry_run uninst/});
 	},
 );
@@ -57,10 +59,11 @@ sub Build {
 	unshift @ARGV, map { @{$_} } grep { defined } $rc_opts->{'*'}, $bpl, $rc_opts->{$action}, \@env;
 	GetOptions(\my %opt, qw/install_base=s install_path=s% installdirs=s destdir=s prefix=s config=s% uninst:1 verbose:1 dry_run:1/);
 	$opt{config} = ExtUtils::Config->new($opt{config});
-	$actions{$action}->(%opt);
+	$actions{$action}->(%opt, meta => _get_meta());
 }
 
 sub Build_PL {
+	my $meta = _get_meta();
 	printf "Creating new 'Build' script for '%s' version '%s'\n", $meta->name, $meta->version;
 	my $dir = $meta->name eq 'Module-Build-Tiny' ? 'lib' : 'inc';
 	write_file(build_script(), "#!perl\nuse lib '$dir';\nuse Module::Build::Tiny;\nBuild();\n");
