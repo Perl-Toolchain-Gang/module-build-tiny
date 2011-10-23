@@ -172,21 +172,6 @@ environment variable the same way they can with Module::Build.
 
 L<Module::Build>
 
-=head1 AUTHOR
-
-  David Golden <dagolden@cpan.org>
-  Leon Timmermans <leont@cpan.org>
-
-=head1 COPYRIGHT AND LICENSE
-
-Copyright (C) 2009 - 2011 by David A. Golden, Leon Timmermans
-
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.10.0 or,
-at your option, any later version of Perl 5 you may have available.
-
-=cut
-
 =for Pod::Coverage
 Build_PL
 =end
