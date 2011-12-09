@@ -7,7 +7,7 @@ our @EXPORT = qw/Build Build_PL/;
 use CPAN::Meta;
 use ExtUtils::BuildRC 0.003 qw/read_config/;
 use ExtUtils::Config 0.003;
-use ExtUtils::Helpers 0.010 qw/make_executable split_like_shell build_script manify man1_pagename man3_pagename/;
+use ExtUtils::Helpers 0.010 qw/make_executable split_like_shell manify man1_pagename man3_pagename/;
 use ExtUtils::Install qw/pm_to_blib install/;
 use ExtUtils::InstallPaths 0.002;
 use File::Find::Rule qw/find/;
@@ -66,8 +66,8 @@ sub Build_PL {
 	my $meta = _get_meta();
 	printf "Creating new 'Build' script for '%s' version '%s'\n", $meta->name, $meta->version;
 	my $dir = $meta->name eq 'Module-Build-Tiny' ? 'lib' : 'inc';
-	write_file(build_script(), "#!perl\nuse lib '$dir';\nuse Module::Build::Tiny;\nBuild();\n");
-	make_executable(build_script());
+	write_file('Build', "#!perl\nuse lib '$dir';\nuse Module::Build::Tiny;\nBuild();\n");
+	make_executable('Build');
 	write_file(qw/_build_params/, encode_json(\@ARGV));
 	write_file("MY$_", read_file($_)) for grep { -f } qw/META.json META.yml/;
 }
