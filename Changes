@@ -1,6 +1,7 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+          Move manify from ExtUtils::Helpers to Module::Build::Tiny
           Don't adapt too much to VMS's wiles (let EU::Helpers take care of the Build.com)
 
 0.011     2011-09-26 15:56:28 Europe/Amsterdam

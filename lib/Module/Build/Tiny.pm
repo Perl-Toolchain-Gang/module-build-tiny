@@ -7,10 +7,12 @@ our @EXPORT = qw/Build Build_PL/;
 use CPAN::Meta;
 use ExtUtils::BuildRC 0.003 qw/read_config/;
 use ExtUtils::Config 0.003;
-use ExtUtils::Helpers 0.010 qw/make_executable split_like_shell manify man1_pagename man3_pagename/;
+use ExtUtils::Helpers 0.010 qw/make_executable split_like_shell man1_pagename man3_pagename/;
 use ExtUtils::Install qw/pm_to_blib install/;
 use ExtUtils::InstallPaths 0.002;
+use File::Basename qw/dirname/;
 use File::Find::Rule qw/find/;
+use File::Path qw/mkpath/;
 use File::Slurp qw/read_file write_file/;
 use File::Spec::Functions qw/catfile catdir rel2abs/;
 use Getopt::Long qw/GetOptions/;
@@ -20,6 +22,15 @@ use TAP::Harness;
 sub _get_meta {
 	my ($metafile) = grep { -e $_ } qw/META.json META.yml/ or die "No META information provided\n";
 	return CPAN::Meta->load_file($metafile);
+}
+
+sub _manify {
+	my ($input_file, $output_file, $section, $opts) = @_;
+	my $dirname = dirname($output_file);
+	mkpath($dirname, $opts->{verbose}) if not -d $dirname;
+	Pod::Man->new(section => $section)->parse_from_file($input_file, $output_file);
+	print "Manifying $output_file\n" if $opts->{verbose} && $opts->{verbose} > 0;
+	return;
 }
 
 my %actions = (
@@ -32,8 +43,8 @@ my %actions = (
 		make_executable($_) for values %scripts;
 
 		if ($opt{config}->exists('installman3dir')) {
-			manify($_, catfile('blib', 'bindoc', man1_pagename($_)), 1, \%opt) for keys %scripts;
-			manify($_, catfile('blib', 'libdoc', man3_pagename($_)), 3, \%opt) for keys %modules;
+			_manify($_, catfile('blib', 'bindoc', man1_pagename($_)), 1, \%opt) for keys %scripts;
+			_manify($_, catfile('blib', 'libdoc', man3_pagename($_)), 3, \%opt) for keys %modules;
 		}
 	},
 	test => sub {
