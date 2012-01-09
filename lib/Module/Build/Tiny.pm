@@ -84,9 +84,9 @@ sub Build_PL {
 
 1;
 
-__END__
-
 #ABSTRACT: A tiny replacement for Module::Build
+
+__END__
 
 =head1 SYNOPSIS
 
