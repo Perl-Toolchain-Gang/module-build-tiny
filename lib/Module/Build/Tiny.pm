@@ -42,7 +42,7 @@ my %actions = (
 		pm_to_blib({ %modules, %scripts }, catdir(qw/blib lib auto/));
 		make_executable($_) for values %scripts;
 
-		if ($opt{config}->exists('installman3dir')) {
+		if ($opt{install_paths}->is_default_installable('libdoc')) {
 			_manify($_, catfile('blib', 'bindoc', man1_pagename($_)), 1, \%opt) for keys %scripts;
 			_manify($_, catfile('blib', 'libdoc', man3_pagename($_)), 3, \%opt) for keys %modules;
 		}
@@ -56,8 +56,7 @@ my %actions = (
 	install => sub {
 		my %opt = @_;
 		die "Must run `./Build build` first\n" if not -d 'blib';
-		my $paths = ExtUtils::InstallPaths->new(%opt, dist_name => $opt{meta}->name);
-		install($paths->install_map, @opt{qw/verbose dry_run uninst/});
+		install($opt{install_paths}->install_map, @opt{qw/verbose dry_run uninst/});
 	},
 );
 
@@ -69,8 +68,8 @@ sub Build {
 	my @env = defined $ENV{PERL_MB_OPT} ? split_like_shell($ENV{PERL_MB_OPT}) : ();
 	unshift @ARGV, map { @{$_} } grep { defined } $rc_opts->{'*'}, $bpl, $rc_opts->{$action}, \@env;
 	GetOptions(\my %opt, qw/install_base=s install_path=s% installdirs=s destdir=s prefix=s config=s% uninst:1 verbose:1 dry_run:1/);
-	$opt{config} = ExtUtils::Config->new($opt{config});
-	$actions{$action}->(%opt, meta => _get_meta());
+	@opt{'config', 'meta'} = (ExtUtils::Config->new($opt{config}), _get_meta());
+	$actions{$action}->(%opt, install_paths => ExtUtils::InstallPaths->new(%opt, dist_name => $opt{meta}->name));
 }
 
 sub Build_PL {
