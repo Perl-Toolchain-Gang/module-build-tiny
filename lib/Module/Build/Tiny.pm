@@ -7,7 +7,7 @@ our @EXPORT = qw/Build Build_PL/;
 use CPAN::Meta;
 use ExtUtils::BuildRC 0.003 qw/read_config/;
 use ExtUtils::Config 0.003;
-use ExtUtils::Helpers 0.010 qw/make_executable split_like_shell man1_pagename man3_pagename/;
+use ExtUtils::Helpers 0.012 qw/make_executable split_like_shell man1_pagename man3_pagename detildefy/;
 use ExtUtils::Install qw/pm_to_blib install/;
 use ExtUtils::InstallPaths 0.002;
 use File::Basename qw/dirname/;
@@ -68,6 +68,7 @@ sub Build {
 	my @env = defined $ENV{PERL_MB_OPT} ? split_like_shell($ENV{PERL_MB_OPT}) : ();
 	unshift @ARGV, map { @{$_} } grep { defined } $rc_opts->{'*'}, $bpl, $rc_opts->{$action}, \@env;
 	GetOptions(\my %opt, qw/install_base=s install_path=s% installdirs=s destdir=s prefix=s config=s% uninst:1 verbose:1 dry_run:1/);
+	$_ = detildefy($_) for grep { defined } @opt{qw/install_base destdir prefix/}, values %{ $opt{install_path} };
 	@opt{'config', 'meta'} = (ExtUtils::Config->new($opt{config}), _get_meta());
 	$actions{$action}->(%opt, install_paths => ExtUtils::InstallPaths->new(%opt, dist_name => $opt{meta}->name));
 }
