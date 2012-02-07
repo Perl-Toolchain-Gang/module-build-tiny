@@ -80,7 +80,7 @@ sub Build_PL {
 	write_file('Build', "#!perl\nuse lib '$dir';\nuse Module::Build::Tiny;\nBuild();\n");
 	make_executable('Build');
 	write_file(qw/_build_params/, encode_json(\@ARGV));
-	write_file("MY$_", read_file($_)) for grep { -f } qw/META.json META.yml/;
+	$meta->save(@$_) for ['MYMETA.json'], ['MYMETA.yml' => { version => 1.4 }];
 }
 
 1;
