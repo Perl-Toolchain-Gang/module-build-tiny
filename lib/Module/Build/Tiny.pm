@@ -19,12 +19,12 @@ use Getopt::Long qw/GetOptions/;
 use JSON 2 qw/encode_json decode_json/;
 use TAP::Harness;
 
-sub _get_meta {
+sub get_meta {
 	my ($metafile) = grep { -e $_ } qw/META.json META.yml/ or die "No META information provided\n";
 	return CPAN::Meta->load_file($metafile);
 }
 
-sub _manify {
+sub manify {
 	my ($input_file, $output_file, $section, $opts) = @_;
 	my $dirname = dirname($output_file);
 	mkpath($dirname, $opts->{verbose}) if not -d $dirname;
@@ -43,8 +43,8 @@ my %actions = (
 		make_executable($_) for values %scripts;
 
 		if ($opt{install_paths}->is_default_installable('libdoc')) {
-			_manify($_, catfile('blib', 'bindoc', man1_pagename($_)), 1, \%opt) for keys %scripts;
-			_manify($_, catfile('blib', 'libdoc', man3_pagename($_)), 3, \%opt) for keys %modules;
+			manify($_, catfile('blib', 'bindoc', man1_pagename($_)), 1, \%opt) for keys %scripts;
+			manify($_, catfile('blib', 'libdoc', man3_pagename($_)), 3, \%opt) for keys %modules;
 		}
 	},
 	test => sub {
@@ -69,12 +69,12 @@ sub Build {
 	unshift @ARGV, map { @{$_} } grep { defined } $rc_opts->{'*'}, $bpl, $rc_opts->{$action}, \@env;
 	GetOptions(\my %opt, qw/install_base=s install_path=s% installdirs=s destdir=s prefix=s config=s% uninst:1 verbose:1 dry_run:1/);
 	$_ = detildefy($_) for grep { defined } @opt{qw/install_base destdir prefix/}, values %{ $opt{install_path} };
-	@opt{'config', 'meta'} = (ExtUtils::Config->new($opt{config}), _get_meta());
+	@opt{'config', 'meta'} = (ExtUtils::Config->new($opt{config}), get_meta());
 	$actions{$action}->(%opt, install_paths => ExtUtils::InstallPaths->new(%opt, dist_name => $opt{meta}->name));
 }
 
 sub Build_PL {
-	my $meta = _get_meta();
+	my $meta = get_meta();
 	printf "Creating new 'Build' script for '%s' version '%s'\n", $meta->name, $meta->version;
 	my $dir = $meta->name eq 'Module-Build-Tiny' ? 'lib' : 'inc';
 	write_file('Build', "#!perl\nuse lib '$dir';\nuse Module::Build::Tiny;\nBuild();\n");
@@ -182,10 +182,6 @@ environment variable the same way they can with Module::Build.
 =head1 SEE ALSO
 
 L<Module::Build>
-
-=for Pod::Coverage
-Build_PL
-=end
 
 =cut
 
