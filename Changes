@@ -1,6 +1,7 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+          Detildefy input
 
 0.012     2012-01-09 22:59:13 Europe/Amsterdam
           Move manify from ExtUtils::Helpers to Module::Build::Tiny
