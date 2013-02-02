@@ -92,8 +92,6 @@ sub Build_PL {
 
 #ABSTRACT: A tiny replacement for Module::Build
 
-__END__
-
 =head1 SYNOPSIS
 
  use Module::Build::Tiny;
