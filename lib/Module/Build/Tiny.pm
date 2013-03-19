@@ -95,7 +95,7 @@ sub Build_PL {
 =head1 SYNOPSIS
 
  use Module::Build::Tiny;
- BuildPL();
+ Build_PL();
 
 =head1 DESCRIPTION
 

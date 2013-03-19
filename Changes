@@ -1,6 +1,7 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+          Fixed Synopsis [tokuhirom]
 
 0.013     2013-02-12 20:17:25 Europe/Amsterdam
           Detildefy input
