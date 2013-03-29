@@ -15,7 +15,7 @@ use File::Find::Rule qw/find/;
 use File::HomeDir;
 use File::Path qw/mkpath/;
 use File::Slurp qw/read_file write_file/;
-use File::Spec::Functions qw/catfile catdir rel2abs/;
+use File::Spec::Functions qw/catfile catdir rel2abs abs2rel/;
 use Getopt::Long qw/GetOptions/;
 use JSON 2 qw/encode_json decode_json/;
 use TAP::Harness;
@@ -44,7 +44,8 @@ my %actions = (
 		system $^X, $_ and die "$_ returned $?\n" for find(file => name => '*.PL', in => 'lib');
 		my %modules = map { $_ => catfile('blib', $_) } find(file => name => [qw/*.pm *.pod/], in => 'lib');
 		my %scripts = map { $_ => catfile('blib', $_) } find(file => name => '*', in => 'script');
-		pm_to_blib({ %modules, %scripts }, catdir(qw/blib lib auto/));
+		my %shared = map { $_ => catfile(qw/blib lib auto share dist/, $opt{meta}->name, abs2rel($_, 'share')) } find(file => name => '*', in => 'share');
+		pm_to_blib({ %modules, %scripts, %shared }, catdir(qw/blib lib auto/));
 		make_executable($_) for values %scripts;
 		mkpath(catdir(qw/blib arch/), $opt{verbose});
 

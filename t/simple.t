@@ -9,6 +9,7 @@ use Test::More 0.88;
 use Test::Exception;
 use lib 't/lib';
 use DistGen qw/undent/;
+use File::ShareDir qw/dist_file dist_dir/;
 
 #--------------------------------------------------------------------------#
 # fixtures
@@ -16,6 +17,7 @@ use DistGen qw/undent/;
 
 my $dist = DistGen->new(name => 'Foo::Bar');
 $dist->chdir_in;
+$dist->add_file('share/file.txt', 'FooBarBaz');
 $dist->add_file('script/simple', undent(<<"    ---"));
     #!perl
     use Foo::Bar;
@@ -85,6 +87,11 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
     my $line = <$fh>;
     like( $line, qr{\A$interpreter}, "blib/script/simple has shebang line with \$^X" );
   }
+
+  require blib;
+  blib->import;
+  ok( -d dist_dir('Foo-Bar'), 'sharedir has been made');
+  ok( -f dist_file('Foo-Bar', 'file.txt'), 'sharedir file has been made');
 }
 
 done_testing;
