@@ -46,6 +46,7 @@ my %actions = (
 		my %scripts = map { $_ => catfile('blib', $_) } find(file => name => '*', in => 'script');
 		pm_to_blib({ %modules, %scripts }, catdir(qw/blib lib auto/));
 		make_executable($_) for values %scripts;
+		mkpath(catdir(qw/blib arch/), $opt{verbose});
 
 		if ($opt{install_paths}->is_default_installable('libdoc')) {
 			manify($_, catfile('blib', 'bindoc', man1_pagename($_)), 1, \%opt) for keys %scripts;
