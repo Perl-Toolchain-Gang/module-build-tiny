@@ -113,8 +113,11 @@ sub _gen_default_filedata {
   my $module_filename =
     join( '/', ('lib', split(/::/, $self->{name})) ) . '.pm';
 
+  my $module_name = $self->{name};
+  (my $dist_name = $module_name) =~ s/::/-/g;
+
   $self->$add_unless($module_filename, undent(<<"      ---"));
-      package $self->{name};
+      package $module_name;
 
       use vars qw( \$VERSION );
       \$VERSION = '0.01';
@@ -129,11 +132,11 @@ sub _gen_default_filedata {
 
       =head1 NAME
 
-      $self->{name} - Perl extension for blah blah blah
+      $module_name - Perl extension for blah blah blah
 
       =head1 DESCRIPTION
 
-      Stub documentation for $self->{name}.
+      Stub documentation for $module_name.
 
       =head1 AUTHOR
 
@@ -146,13 +149,13 @@ sub _gen_default_filedata {
     use Test::More 0.23 tests => 1;
     use strict;
 
-    use $self->{name};
+    use $module_name;
     ok 1;
     ---
 
   $self->$add_unless('META.yml', undent(<<"    ----"));
     ---
-    name: $self->{name}
+    name: $dist_name
     version: 0.001
     author:
       - 'David Golden <dagolden\@cpan.org>'
