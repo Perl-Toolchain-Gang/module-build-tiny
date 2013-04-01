@@ -14,11 +14,21 @@ use File::Basename qw/dirname/;
 use File::Find::Rule qw/find/;
 use File::HomeDir;
 use File::Path qw/mkpath/;
-use File::Slurp qw/read_file write_file/;
 use File::Spec::Functions qw/catfile catdir rel2abs abs2rel/;
 use Getopt::Long qw/GetOptions/;
 use JSON 2 qw/encode_json decode_json/;
 use TAP::Harness;
+
+sub write_file {
+	my ($filename, $mode, $content) = @_;
+	open my $fh, ">:$mode", $filename or die "Could not open $filename: $!\n";;
+	print $fh $content;
+}
+sub read_file {
+	my ($filename, $mode) = @_;
+	open my $fh, "<:$mode", $filename or die "Could not open $filename: $!\n";
+	return do { local $/; <$fh> };
+}
 
 sub get_meta {
 	my ($metafile) = grep { -e $_ } qw/META.json META.yml/ or die "No META information provided\n";
@@ -68,7 +78,7 @@ my %actions = (
 );
 
 sub Build {
-	my $bpl = decode_json(read_file('_build_params'));
+	my $bpl = decode_json(read_file('_build_params', 'utf8'));
 	my $action = @ARGV && $ARGV[0] =~ /\A\w+\z/ ? shift @ARGV : 'build';
 	die "No such action '$action'\n" if not $actions{$action};
 	my $rc_opts = read_config();
@@ -84,9 +94,9 @@ sub Build_PL {
 	my $meta = get_meta();
 	printf "Creating new 'Build' script for '%s' version '%s'\n", $meta->name, $meta->version;
 	my $dir = $meta->name eq 'Module-Build-Tiny' ? 'lib' : 'inc';
-	write_file('Build', "#!perl\nuse lib '$dir';\nuse Module::Build::Tiny;\nBuild();\n");
+	write_file('Build', 'raw', "#!perl\nuse lib '$dir';\nuse Module::Build::Tiny;\nBuild();\n");
 	make_executable('Build');
-	write_file(qw/_build_params/, encode_json(\@ARGV));
+	write_file('_build_params', 'utf8', encode_json(\@ARGV));
 	$meta->save(@$_) for ['MYMETA.json'], ['MYMETA.yml' => { version => 1.4 }];
 }
 
@@ -107,7 +117,7 @@ Traditionally, Build.PL uses Module::Build as the underlying build system.
 This module provides a simple, lightweight, drop-in replacement.
 
 Whereas Module::Build has over 6,700 lines of code; this module has less
-than 70, yet supports the features needed by most pure-Perl distributions.
+than 100, yet supports the features needed by most pure-Perl distributions.
 
 =head2 Supported
 
