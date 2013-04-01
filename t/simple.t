@@ -4,7 +4,7 @@ use warnings;
 use Config;
 use File::pushd 1.00 qw(tempd);
 use File::Spec 0 ();
-use Capture::Tiny 0 qw(capture);
+use IPC::Open2;
 use Test::More 0.88;
 use lib 't/lib';
 use DistGen qw/undent/;
@@ -60,7 +60,9 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
 #--------------------------------------------------------------------------#
 
 {
-  ok eval { capture { system($^X, "Build") and die $! } }, "Ran Build";
+  ok( open2(my($in, $out), $^X, 'Build'), 'Could run Build' );
+  my $output = do { local $/; <$in> };
+  like( $output, qr{lib/Foo/Bar\.pm}, 'Build output looks correctly');
   ok( -d 'blib',        "created blib" );
   ok( -d 'blib/lib',    "created blib/lib" );
   ok( -d 'blib/script', "created blib/script" );
