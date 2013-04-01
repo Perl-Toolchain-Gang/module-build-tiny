@@ -3,12 +3,11 @@ use strict;
 use warnings;
 use Config;
 use File::pushd 1.00 qw(tempd);
-use File::Spec 0 ();
+use File::Spec::Functions 0 qw/catdir catfile/;
 use IPC::Open2;
 use Test::More 0.88;
 use lib 't/lib';
 use DistGen qw/undent/;
-use File::ShareDir qw/dist_file dist_dir/;
 
 #--------------------------------------------------------------------------#
 # fixtures
@@ -89,10 +88,14 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
     like( $line, qr{\A$interpreter}, "blib/script/simple has shebang line with \$^X" );
   }
 
-  require blib;
-  blib->import;
-  ok( -d dist_dir('Foo-Bar'), 'sharedir has been made');
-  ok( -f dist_file('Foo-Bar', 'file.txt'), 'sharedir file has been made');
+  if (eval { require File::ShareDir }) {
+	  require blib;
+	  blib->import;
+	  ok( -d File::ShareDir::dist_dir('Foo-Bar'), 'sharedir has been made');
+	  ok( -f File::ShareDir::dist_file('Foo-Bar', 'file.txt'), 'sharedir file has been made');
+  }
+  ok( -d catdir(qw/blib lib auto share dist Foo-Bar/), 'sharedir has been made');
+  ok( -f catfile(qw/blib lib auto share dist Foo-Bar file.txt/), 'sharedir file has been made');
 }
 
 done_testing;
