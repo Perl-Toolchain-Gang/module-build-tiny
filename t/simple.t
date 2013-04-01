@@ -6,7 +6,6 @@ use File::pushd 1.00 qw(tempd);
 use File::Spec 0 ();
 use Capture::Tiny 0 qw(capture);
 use Test::More 0.88;
-use Test::Exception;
 use lib 't/lib';
 use DistGen qw/undent/;
 use File::ShareDir qw/dist_file dist_dir/;
@@ -61,7 +60,7 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
 #--------------------------------------------------------------------------#
 
 {
-  lives_ok { capture { system($^X, "Build") and die $! } } "Ran Build";
+  ok eval { capture { system($^X, "Build") and die $! } }, "Ran Build";
   ok( -d 'blib',        "created blib" );
   ok( -d 'blib/lib',    "created blib/lib" );
   ok( -d 'blib/script', "created blib/script" );
