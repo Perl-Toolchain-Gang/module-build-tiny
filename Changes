@@ -1,6 +1,8 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+
+0.014     2013-04-04 15:58:50 Europe/Amsterdam
           Added sharedir support
           Fixed Synopsis [tokuhirom]
           Make blib/arch, to satisfy blib.pm
