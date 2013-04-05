@@ -17,6 +17,7 @@ use File::Path qw/mkpath/;
 use File::Spec::Functions qw/catfile catdir rel2abs abs2rel/;
 use Getopt::Long qw/GetOptions/;
 use JSON 2 qw/encode_json decode_json/;
+use Pod::Man;
 use TAP::Harness;
 
 sub write_file {
