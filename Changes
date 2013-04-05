@@ -1,6 +1,7 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+          Remove dependency on File::Find::Rule
 
 0.014     2013-04-04 15:58:50 Europe/Amsterdam
           Added sharedir support

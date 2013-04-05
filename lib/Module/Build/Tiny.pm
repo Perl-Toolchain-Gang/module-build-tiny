@@ -11,7 +11,6 @@ use ExtUtils::Helpers 0.010 qw/make_executable split_like_shell man1_pagename ma
 use ExtUtils::Install qw/pm_to_blib install/;
 use ExtUtils::InstallPaths 0.002;
 use File::Basename qw/dirname/;
-use File::Find::Rule qw/find/;
 use File::HomeDir;
 use File::Path qw/mkpath/;
 use File::Spec::Functions qw/catfile catdir rel2abs abs2rel/;
@@ -49,13 +48,20 @@ sub manify {
 	return;
 }
 
+sub find {
+	my ($pattern, @dirs) = @_;
+	my @ret;
+	File::Find::find(sub { push @ret, $File::Find::name if -f $_ && $_ =~ $pattern }, @dirs);
+	return @ret;
+}
+
 my %actions = (
 	build => sub {
 		my %opt = @_;
-		system $^X, $_ and die "$_ returned $?\n" for find(file => name => '*.PL', in => 'lib');
-		my %modules = map { $_ => catfile('blib', $_) } find(file => name => [qw/*.pm *.pod/], in => 'lib');
-		my %scripts = map { $_ => catfile('blib', $_) } find(file => name => '*', in => 'script');
-		my %shared = map { $_ => catfile(qw/blib lib auto share dist/, $opt{meta}->name, abs2rel($_, 'share')) } find(file => name => '*', in => 'share');
+		system $^X, $_ and die "$_ returned $?\n" for find(qr/\.PL$/, 'lib');
+		my %modules = map { $_ => catfile('blib', $_) } find(qr/\.p(?:m|od)$/, 'lib');
+		my %scripts = map { $_ => catfile('blib', $_) } find(qr//, 'script');
+		my %shared = map { $_ => catfile(qw/blib lib auto share dist/, $opt{meta}->name, abs2rel($_, 'share')) } find(qr//, 'share');
 		pm_to_blib({ %modules, %scripts, %shared }, catdir(qw/blib lib auto/));
 		make_executable($_) for values %scripts;
 		mkpath(catdir(qw/blib arch/), $opt{verbose});
@@ -69,7 +75,7 @@ my %actions = (
 		my %opt = @_;
 		die "Must run `./Build build` first\n" if not -d 'blib';
 		my $tester = TAP::Harness->new({verbosity => $opt{verbose}, lib => rel2abs(catdir(qw/blib lib/)), color => -t STDOUT});
-		$tester->runtests(sort +find(file => name => '*.t', in => 't'))->has_errors and exit 1;
+		$tester->runtests(sort +find(qr/\.t$/, 't'))->has_errors and exit 1;
 	},
 	install => sub {
 		my %opt = @_;
