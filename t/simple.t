@@ -2,7 +2,6 @@
 use strict;
 use warnings;
 use Config;
-use File::pushd 1.00 qw(tempd);
 use File::Spec::Functions 0 qw/catdir catfile/;
 use IPC::Open2;
 use Test::More 0.88;
