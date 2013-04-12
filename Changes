@@ -1,6 +1,8 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+
+0.015     2013-04-12 15:58:14 Europe/London
           Switched back from JSON to JSON::PP
           Remove dependency on File::Find::Rule
 
