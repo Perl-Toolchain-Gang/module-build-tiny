@@ -1,6 +1,8 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+
+0.016     2013-04-12 17:24:52 Europe/London
           Fix loading of File::Find
 
 0.015     2013-04-12 15:58:14 Europe/London
