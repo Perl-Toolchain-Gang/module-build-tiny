@@ -5,6 +5,8 @@ Revision history for Module::Build::Tiny
 0.015     2013-04-12 15:58:14 Europe/London
           Switched back from JSON to JSON::PP
           Remove dependency on File::Find::Rule
+          Switched back to ExtUtils::Helpers for detildefy
+          Drop .modulebuildrc support per Lancaster consensus
 
 0.014     2013-04-04 15:58:50 Europe/Amsterdam
           Added sharedir support
