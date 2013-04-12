@@ -10,6 +10,7 @@ use ExtUtils::Helpers 0.016 qw/make_executable split_like_shell man1_pagename ma
 use ExtUtils::Install qw/pm_to_blib install/;
 use ExtUtils::InstallPaths 0.002;
 use File::Basename qw/dirname/;
+use File::Find;
 use File::Path qw/mkpath/;
 use File::Spec::Functions qw/catfile catdir rel2abs abs2rel/;
 use Getopt::Long qw/GetOptions/;
