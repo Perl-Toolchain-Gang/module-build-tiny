@@ -5,7 +5,6 @@ use Exporter 5.57 'import';
 our @EXPORT = qw/Build Build_PL/;
 
 use CPAN::Meta;
-use ExtUtils::BuildRC 0.003 qw/read_config/;
 use ExtUtils::Config 0.003;
 use ExtUtils::Helpers 0.016 qw/make_executable split_like_shell man1_pagename man3_pagename detildefy/;
 use ExtUtils::Install qw/pm_to_blib install/;
@@ -83,9 +82,8 @@ sub Build {
 	my $bpl = decode_json(read_file('_build_params', 'utf8'));
 	my $action = @ARGV && $ARGV[0] =~ /\A\w+\z/ ? shift @ARGV : 'build';
 	die "No such action '$action'\n" if not $actions{$action};
-	my $rc_opts = read_config();
 	my @env = defined $ENV{PERL_MB_OPT} ? split_like_shell($ENV{PERL_MB_OPT}) : ();
-	unshift @ARGV, map { @{$_} } grep { defined } $rc_opts->{'*'}, $bpl, $rc_opts->{$action}, \@env;
+	unshift @ARGV, map { @{$_} } $bpl, \@env;
 	GetOptions(\my %opt, qw/install_base=s install_path=s% installdirs=s destdir=s prefix=s config=s% uninst:1 verbose:1 dry_run:1/);
 	$_ = detildefy($_) for grep { defined } @opt{qw/install_base destdir prefix/}, values %{ $opt{install_path} };
 	@opt{'config', 'meta'} = (ExtUtils::Config->new($opt{config}), get_meta());
