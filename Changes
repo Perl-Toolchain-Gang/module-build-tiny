@@ -1,6 +1,8 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+
+0.017     2013-04-13 09:13:22 Europe/London
           Fix redefined warning for find
 
 0.016     2013-04-12 17:24:52 Europe/London
