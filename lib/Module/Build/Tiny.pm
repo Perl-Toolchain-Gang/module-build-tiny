@@ -34,6 +34,7 @@ sub get_meta {
 
 sub manify {
 	my ($input_file, $output_file, $section, $opts) = @_;
+	return if -e $output_file && -M $input_file <= -M $output_file;
 	my $dirname = dirname($output_file);
 	mkpath($dirname, $opts->{verbose}) if not -d $dirname;
 	require Pod::Man;
