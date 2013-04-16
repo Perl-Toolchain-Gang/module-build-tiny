@@ -15,8 +15,6 @@ use File::Path qw/mkpath/;
 use File::Spec::Functions qw/catfile catdir rel2abs abs2rel/;
 use Getopt::Long qw/GetOptions/;
 use JSON::PP 2 qw/encode_json decode_json/;
-use Pod::Man;
-use TAP::Harness;
 
 sub write_file {
 	my ($filename, $mode, $content) = @_;
@@ -38,6 +36,7 @@ sub manify {
 	my ($input_file, $output_file, $section, $opts) = @_;
 	my $dirname = dirname($output_file);
 	mkpath($dirname, $opts->{verbose}) if not -d $dirname;
+	require Pod::Man;
 	Pod::Man->new(section => $section)->parse_from_file($input_file, $output_file);
 	print "Manifying $output_file\n" if $opts->{verbose} && $opts->{verbose} > 0;
 	return;
@@ -69,6 +68,7 @@ my %actions = (
 	test => sub {
 		my %opt = @_;
 		die "Must run `./Build build` first\n" if not -d 'blib';
+		require TAP::Harness;
 		my $tester = TAP::Harness->new({verbosity => $opt{verbose}, lib => rel2abs(catdir(qw/blib lib/)), color => -t STDOUT});
 		$tester->runtests(sort +find(qr/\.t$/, 't'))->has_errors and exit 1;
 	},
