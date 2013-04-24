@@ -6,7 +6,7 @@ our @EXPORT = qw/Build Build_PL/;
 
 use CPAN::Meta;
 use ExtUtils::Config 0.003;
-use ExtUtils::Helpers 0.016 qw/make_executable split_like_shell man1_pagename man3_pagename detildefy/;
+use ExtUtils::Helpers 0.019 qw/make_executable split_like_shell man1_pagename man3_pagename detildefy/;
 use ExtUtils::Install qw/pm_to_blib install/;
 use ExtUtils::InstallPaths 0.002;
 use File::Basename qw/dirname/;
