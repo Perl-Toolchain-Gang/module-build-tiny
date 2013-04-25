@@ -1,6 +1,7 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+          Accept --pureperl-only
 
 0.018     2013-04-24 16:22:44 Europe/Amsterdam
           Lazily load Pod::Man and TAP::Harness
