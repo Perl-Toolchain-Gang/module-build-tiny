@@ -1,6 +1,8 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+
+0.019     2013-04-30 01:20:54 Europe/Amsterdam
           Accept --pureperl-only
 
 0.018     2013-04-24 16:22:44 Europe/Amsterdam
