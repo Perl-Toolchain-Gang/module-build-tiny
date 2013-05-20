@@ -1,6 +1,8 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+
+0.020     2013-05-20 14:29:59 Europe/Amsterdam
           Accept a --create_packlist argument
 
 0.019     2013-04-30 01:20:54 Europe/Amsterdam
