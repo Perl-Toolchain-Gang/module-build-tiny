@@ -95,8 +95,8 @@ sub Build {
 sub Build_PL {
 	my $meta = get_meta();
 	printf "Creating new 'Build' script for '%s' version '%s'\n", $meta->name, $meta->version;
-	my $dir = $meta->name eq 'Module-Build-Tiny' ? 'lib' : 'inc';
-	write_file('Build', 'raw', "#!perl\nuse lib '$dir';\nuse Module::Build::Tiny;\nBuild();\n");
+	my $dir = $meta->name eq 'Module-Build-Tiny' ? "use lib 'lib';" : '';
+	write_file('Build', 'raw', "#!perl\n$dir\nuse Module::Build::Tiny;\nBuild();\n");
 	make_executable('Build');
 	write_file('_build_params', 'utf8', encode_json(\@ARGV));
 	$meta->save(@$_) for ['MYMETA.json'], ['MYMETA.yml' => { version => 1.4 }];
