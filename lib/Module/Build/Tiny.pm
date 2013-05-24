@@ -61,7 +61,7 @@ my %actions = (
 		make_executable($_) for values %scripts;
 		mkpath(catdir(qw/blib arch/), $opt{verbose});
 
-		if ($opt{install_paths}->is_default_installable('libdoc')) {
+		if ($opt{install_paths}->install_destination('libdoc') && $opt{install_paths}->is_default_installable('libdoc')) {
 			manify($_, catfile('blib', 'bindoc', man1_pagename($_)), 1, \%opt) for keys %scripts;
 			manify($_, catfile('blib', 'libdoc', man3_pagename($_)), 3, \%opt) for keys %modules;
 		}
