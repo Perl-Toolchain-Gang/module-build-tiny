@@ -44,9 +44,9 @@ sub manify {
 }
 
 sub find {
-	my ($pattern, @dirs) = @_;
+	my ($pattern, $dir) = @_;
 	my @ret;
-	File::Find::find(sub { push @ret, $File::Find::name if -f $_ && $_ =~ $pattern }, @dirs);
+	File::Find::find(sub { push @ret, $File::Find::name if /$pattern/ && -f }, $dir) if -d $dir;
 	return @ret;
 }
 
@@ -55,8 +55,8 @@ my %actions = (
 		my %opt = @_;
 		system $^X, $_ and die "$_ returned $?\n" for find(qr/\.PL$/, 'lib');
 		my %modules = map { $_ => catfile('blib', $_) } find(qr/\.p(?:m|od)$/, 'lib');
-		my %scripts = -d 'script' ? map { $_ => catfile('blib', $_) } find(qr//, 'script') : ();
-		my %shared =  -d 'share' ? map { $_ => catfile(qw/blib lib auto share dist/, $opt{meta}->name, abs2rel($_, 'share')) } find(qr//, 'share') : ();
+		my %scripts = map { $_ => catfile('blib', $_) } find(qr//, 'script');
+		my %shared =  map { $_ => catfile(qw/blib lib auto share dist/, $opt{meta}->name, abs2rel($_, 'share')) } find(qr//, 'share');
 		pm_to_blib({ %modules, %scripts, %shared }, catdir(qw/blib lib auto/));
 		make_executable($_) for values %scripts;
 		mkpath(catdir(qw/blib arch/), $opt{verbose});
