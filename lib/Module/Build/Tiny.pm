@@ -9,10 +9,10 @@ use ExtUtils::Config 0.003;
 use ExtUtils::Helpers 0.020 qw/make_executable split_like_shell man1_pagename man3_pagename detildefy/;
 use ExtUtils::Install qw/pm_to_blib install/;
 use ExtUtils::InstallPaths 0.002;
-use File::Basename qw/dirname/;
+use File::Basename qw/basename dirname/;
 use File::Find ();
 use File::Path qw/mkpath/;
-use File::Spec::Functions qw/catfile catdir rel2abs abs2rel/;
+use File::Spec::Functions qw/catfile catdir rel2abs abs2rel splitdir/;
 use Getopt::Long qw/GetOptions/;
 use JSON::PP 2 qw/encode_json decode_json/;
 
@@ -43,6 +43,26 @@ sub manify {
 	return;
 }
 
+sub process_xs {
+	my ($source, $options) = @_;
+
+	my @dirnames = splitdir(abs2rel(dirname($source), 'lib'));
+	my $file_base = basename($source, '.xs');
+	my $archdir = catdir(qw/blib arch auto/, @dirnames, $file_base);
+
+	my $c_file = catfile('lib', @dirnames, "$file_base.c");
+	require ExtUtils::ParseXS;
+	ExtUtils::ParseXS::process_file(filename => $source, prototypes => 0, output => $c_file);
+
+	my $version = $options->{meta}->version;
+	require ExtUtils::CBuilder;
+	my $builder = ExtUtils::CBuilder->new(config => $options->{config}->values_set);
+	my $ob_file = $builder->compile(source => $c_file, defines => { VERSION => qq/"$version"/, XS_VERSION => qq/"$version"/ });
+
+	mkpath($archdir, $options->{verbose}, oct '755') unless -d $archdir;
+	return $builder->link(objects => $ob_file, lib_file => catfile($archdir, "$file_base.".$options->{config}->get('dlext')), module_name => join '::', @dirnames, $file_base);
+}
+
 sub find {
 	my ($pattern, $dir) = @_;
 	my @ret;
@@ -60,6 +80,7 @@ my %actions = (
 		pm_to_blib({ %modules, %scripts, %shared }, catdir(qw/blib lib auto/));
 		make_executable($_) for values %scripts;
 		mkpath(catdir(qw/blib arch/), $opt{verbose});
+		process_xs($_, \%opt) for find(qr/.xs$/, 'lib');
 
 		if ($opt{install_paths}->install_destination('libdoc') && $opt{install_paths}->is_default_installable('libdoc')) {
 			manify($_, catfile('blib', 'bindoc', man1_pagename($_)), 1, \%opt) for keys %scripts;
@@ -70,7 +91,7 @@ my %actions = (
 		my %opt = @_;
 		die "Must run `./Build build` first\n" if not -d 'blib';
 		require TAP::Harness;
-		my $tester = TAP::Harness->new({verbosity => $opt{verbose}, lib => rel2abs(catdir(qw/blib lib/)), color => -t STDOUT});
+		my $tester = TAP::Harness->new({verbosity => $opt{verbose}, lib => [ map { rel2abs(catdir(qw/blib/, $_)) } qw/arch lib/ ], color => -t STDOUT});
 		$tester->runtests(sort +find(qr/\.t$/, 't'))->has_errors and exit 1;
 	},
 	install => sub {
@@ -119,13 +140,15 @@ Traditionally, Build.PL uses Module::Build as the underlying build system.
 This module provides a simple, lightweight, drop-in replacement.
 
 Whereas Module::Build has over 6,700 lines of code; this module has less
-than 100, yet supports the features needed by most pure-Perl distributions.
+than 120, yet supports the features needed by most distributions.
 
 =head2 Supported
 
 =over 4
 
 =item * Pure Perl distributions
+
+=item * Building XS or C
 
 =item * Recursive test files
 
@@ -142,8 +165,6 @@ than 100, yet supports the features needed by most pure-Perl distributions.
 =over 4
 
 =item * Dynamic prerequisites
-
-=item * Building XS or C
 
 =item * HTML documentation generation
 

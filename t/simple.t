@@ -7,6 +7,7 @@ use IPC::Open2;
 use Test::More 0.88;
 use lib 't/lib';
 use DistGen qw/undent/;
+use XSLoader;
 
 #--------------------------------------------------------------------------#
 # fixtures
@@ -15,11 +16,27 @@ use DistGen qw/undent/;
 my $dist = DistGen->new(name => 'Foo::Bar');
 $dist->chdir_in;
 $dist->add_file('share/file.txt', 'FooBarBaz');
-$dist->add_file('script/simple', undent(<<"    ---"));
+$dist->add_file('script/simple', undent(<<'    ---'));
     #!perl
     use Foo::Bar;
     print Simple->VERSION . "\n";
     ---
+$dist->add_file('lib/Simple.xs', undent(<<'    ---'));
+    #define PERL_NO_GET_CONTEXT
+    #include "EXTERN.h"
+    #include "perl.h"
+    #include "XSUB.h"
+
+    MODULE = Simple                PACKAGE = Simple
+
+    const char*
+    foo()
+        CODE:
+        RETVAL = "Hello World!\n";
+        OUTPUT:
+        RETVAL
+    ---
+
 $dist->regen;
 
 my $interpreter = ($Config{startperl} eq $^X )
@@ -87,14 +104,17 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
     like( $line, qr{\A$interpreter}, "blib/script/simple has shebang line with \$^X" );
   }
 
+  require blib;
+  blib->import;
   if (eval { require File::ShareDir }) {
-	  require blib;
-	  blib->import;
 	  ok( -d File::ShareDir::dist_dir('Foo-Bar'), 'sharedir has been made');
 	  ok( -f File::ShareDir::dist_file('Foo-Bar', 'file.txt'), 'sharedir file has been made');
   }
   ok( -d catdir(qw/blib lib auto share dist Foo-Bar/), 'sharedir has been made');
   ok( -f catfile(qw/blib lib auto share dist Foo-Bar file.txt/), 'sharedir file has been made');
+
+  XSLoader::load('Simple');
+  is(Simple::foo(), "Hello World!\n");
 }
 
 done_testing;
