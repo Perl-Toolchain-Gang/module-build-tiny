@@ -1,6 +1,8 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+
+0.021     2013-05-27 14:35:05 Europe/Amsterdam
           Add XS support
           Only manify if really installable
 
