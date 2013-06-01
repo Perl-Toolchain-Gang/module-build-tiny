@@ -1,6 +1,8 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+
+0.022     2013-06-01 03:31:05 Europe/Amsterdam
           Fix dirname code for toplevel XS modules
 
 0.021     2013-05-27 14:35:05 Europe/Amsterdam
