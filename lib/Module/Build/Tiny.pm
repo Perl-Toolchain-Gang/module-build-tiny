@@ -46,7 +46,7 @@ sub manify {
 sub process_xs {
 	my ($source, $options) = @_;
 
-	my @dirnames = splitdir(abs2rel(dirname($source), 'lib'));
+	my (undef, @dirnames) = splitdir(dirname($source));
 	my $file_base = basename($source, '.xs');
 	my $archdir = catdir(qw/blib arch auto/, @dirnames, $file_base);
 
