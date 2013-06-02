@@ -46,6 +46,7 @@ sub manify {
 sub process_xs {
 	my ($source, $options) = @_;
 
+	die "Can't build xs files under --pureperl-only\n" if $options->{'pureperl-only'};
 	my (undef, @dirnames) = splitdir(dirname($source));
 	my $file_base = basename($source, '.xs');
 	my $archdir = catdir(qw/blib arch auto/, @dirnames, $file_base);
