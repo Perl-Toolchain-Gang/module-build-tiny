@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use Config;
+use ExtUtils::CBuilder;
 use File::Spec::Functions 0 qw/catdir catfile/;
 use IPC::Open2;
 use Test::More 0.88;
@@ -21,7 +22,8 @@ $dist->add_file('script/simple', undent(<<'    ---'));
     use Foo::Bar;
     print Simple->VERSION . "\n";
     ---
-$dist->add_file('lib/Simple.xs', undent(<<'    ---'));
+my $has_compiler = ExtUtils::CBuilder->new->have_compiler();
+$dist->add_file('lib/Simple.xs', undent(<<'    ---')) if $has_compiler;
     #define PERL_NO_GET_CONTEXT
     #include "EXTERN.h"
     #include "perl.h"
@@ -107,14 +109,16 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
   require blib;
   blib->import;
   if (eval { require File::ShareDir }) {
-	  ok( -d File::ShareDir::dist_dir('Foo-Bar'), 'sharedir has been made');
-	  ok( -f File::ShareDir::dist_file('Foo-Bar', 'file.txt'), 'sharedir file has been made');
+    ok( -d File::ShareDir::dist_dir('Foo-Bar'), 'sharedir has been made');
+    ok( -f File::ShareDir::dist_file('Foo-Bar', 'file.txt'), 'sharedir file has been made');
   }
   ok( -d catdir(qw/blib lib auto share dist Foo-Bar/), 'sharedir has been made');
   ok( -f catfile(qw/blib lib auto share dist Foo-Bar file.txt/), 'sharedir file has been made');
 
-  XSLoader::load('Simple');
-  is(Simple::foo(), "Hello World!\n");
+  if ($has_compiler) {
+    XSLoader::load('Simple');
+    is(Simple::foo(), "Hello World!\n");
+  }
 }
 
 done_testing;

@@ -1,6 +1,7 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+          Skip compilation test when not having a compiler
 
 0.022     2013-06-01 03:31:05 Europe/Amsterdam
           Fix dirname code for toplevel XS modules
