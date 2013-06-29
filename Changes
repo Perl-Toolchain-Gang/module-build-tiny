@@ -1,6 +1,8 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+
+0.024     2013-06-29 21:57:13 Europe/Amsterdam
           Generate man pages in the correct section
 
 0.023     2013-06-03 01:13:05 Europe/Amsterdam
