@@ -1,6 +1,7 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+          Generate man pages in the correct section
 
 0.023     2013-06-03 01:13:05 Europe/Amsterdam
           Implement --pureperl-only
