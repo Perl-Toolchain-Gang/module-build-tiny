@@ -50,9 +50,9 @@ sub reset {
   my %options = @_;
 
   $options{name} ||= 'Simple';
-  $options{dir} ||= File::Temp::tempdir(
-    DIR => File::Spec->tmpdir, CLEANUP => 1
-  );
+  $options{dir} ||= File::Spec->rel2abs(File::Temp::tempdir(
+    DIR => File::Spec->curdir, CLEANUP => 1
+  ));
 
   my %data = (
     %options,
