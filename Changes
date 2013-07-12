@@ -1,6 +1,8 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+
+0.025     2013-07-12 16:09:45 Europe/Amsterdam
           Use local tempdir
 
 0.024     2013-06-29 21:57:13 Europe/Amsterdam
