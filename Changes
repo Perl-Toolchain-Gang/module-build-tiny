@@ -1,6 +1,8 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+          Missing or conflicting prerequisites are checked for at each phase,
+          as specified in CPAN::Meta::Spec#Prereq-Spec [Karen Etheridge]
 
 0.025     2013-07-12 16:09:45 Europe/Amsterdam
           Use local tempdir
