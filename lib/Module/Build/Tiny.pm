@@ -224,4 +224,4 @@ L<Module::Build>
 
 =cut
 
-# vi:et:sts=2:sw=2:ts=2
+# vi:noet:sts=2:sw=2:ts=2
