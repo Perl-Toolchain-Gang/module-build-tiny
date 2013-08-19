@@ -103,11 +103,9 @@ my %actions = (
 );
 
 sub Build {
-	my $bpl = decode_json(read_file('_build_params', 'utf8'));
 	my $action = @ARGV && $ARGV[0] =~ /\A\w+\z/ ? shift @ARGV : 'build';
 	die "No such action '$action'\n" if not $actions{$action};
-	my @env = defined $ENV{PERL_MB_OPT} ? split_like_shell($ENV{PERL_MB_OPT}) : ();
-	unshift @ARGV, map { @{$_} } $bpl, \@env;
+	unshift @ARGV, @{ decode_json(read_file('_build_params', 'utf8')) };
 	GetOptions(\my %opt, qw/install_base=s install_path=s% installdirs=s destdir=s prefix=s config=s% uninst:1 verbose:1 dry_run:1 pureperl-only:1 create_packlist=i/);
 	$_ = detildefy($_) for grep { defined } @opt{qw/install_base destdir prefix/}, values %{ $opt{install_path} };
 	@opt{'config', 'meta'} = (ExtUtils::Config->new($opt{config}), get_meta());
@@ -120,7 +118,8 @@ sub Build_PL {
 	my $dir = $meta->name eq 'Module-Build-Tiny' ? "use lib 'lib';" : '';
 	write_file('Build', 'raw', "#!perl\n$dir\nuse Module::Build::Tiny;\nBuild();\n");
 	make_executable('Build');
-	write_file('_build_params', 'utf8', encode_json(\@ARGV));
+	my @env = defined $ENV{PERL_MB_OPT} ? split_like_shell($ENV{PERL_MB_OPT}) : ();
+	write_file('_build_params', 'utf8', encode_json([ @env, @ARGV ]));
 	$meta->save(@$_) for ['MYMETA.json'], ['MYMETA.yml' => { version => 1.4 }];
 }
 
