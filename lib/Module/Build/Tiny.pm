@@ -170,6 +170,8 @@ than 120, yet supports the features needed by most distributions.
 
 =item * Extending Module::Build::Tiny
 
+=item * Module sharedirs
+
 =back
 
 =head2 Directory structure
