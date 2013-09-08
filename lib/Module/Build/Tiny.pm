@@ -196,6 +196,8 @@ This supports the following options:
 
 =over
 
+=item * verbose
+
 =item * install_base
 
 =item * installdirs
@@ -208,16 +210,35 @@ This supports the following options:
 
 =item * uninst
 
+=item * config
+
+=item * pure-perl
+
+=item * create_packlist
+
 =back
 
 =head1 AUTHORING
 
-This module doesn't support authoring. To develop modules using Module::Build::Tiny, usage of L<Dist::Zilla::Plugin::ModuleBuildTiny> is recommended.
+This module doesn't support authoring. To develop modules using Module::Build::Tiny, usage of L<Dist::Zilla::Plugin::ModuleBuildTiny> or L<App::ModuleBuildTiny> is recommended.
 
 =head1 CONFIG FILE AND ENVIRONMENT
 
-Options can be provided in a F<.modulebuildrc> file or in the C<PERL_MB_OPT>
-environment variable the same way they can with Module::Build.
+Options can be provided in the C<PERL_MB_OPT> environment variable the same way they can with Module::Build. This should be done during the configuration stage.
+
+=head2 Incompatibilities
+
+=over 4
+
+=item * Argument parsing
+
+Module::Build has an extremely permissive way of argument handling, Module::Build::Tiny only supports a (sane) subset of that. In particular, C<./Build destdir=/foo> does not work, you will need to pass it as C<./Build --destdir=/foo>.
+
+=item * .modulebuildrc
+
+Module::Build::Tiny does not support .modulebuildrc files. In particular, this means that versions of local::lib older than 1.006008 may break. Upgrading it resolves this issue.
+
+=back
 
 =head1 SEE ALSO
 
