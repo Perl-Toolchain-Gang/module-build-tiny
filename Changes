@@ -1,6 +1,8 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+          Missing or conflicting prerequisites are checked for at each phase,
+          as specified in CPAN::Meta::Spec#Prereq-Spec [Karen Etheridge]
 
 0.026     2013-08-19 22:09:00 Europe/Amsterdam
           Safe PERL_MB_OPT during configuration stage

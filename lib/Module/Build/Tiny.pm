@@ -5,6 +5,7 @@ use Exporter 5.57 'import';
 our @EXPORT = qw/Build Build_PL/;
 
 use CPAN::Meta;
+use CPAN::Meta::Check 0.004 qw/check_requirements requirements_for/;
 use ExtUtils::Config 0.003;
 use ExtUtils::Helpers 0.020 qw/make_executable split_like_shell man1_pagename man3_pagename detildefy/;
 use ExtUtils::Install qw/pm_to_blib install/;
@@ -71,9 +72,22 @@ sub find {
 	return @ret;
 }
 
+sub check_dependencies {
+	my ($meta, @phases) = @_;
+
+	foreach my $type (qw/requires conflicts/)
+	{
+		my $ret = check_requirements(requirements_for($meta, \@phases, $type), $type);
+		my @missing = grep { defined $ret->{$_} } sort keys %{$ret};
+		print $ret->{$_}, "\n" foreach @missing;
+		return @missing;
+	}
+}
+
 my %actions = (
 	build => sub {
 		my %opt = @_;
+		die "Missing prerequisites\n" if check_dependencies($opt{meta}, qw/configure runtime build/);
 		system $^X, $_ and die "$_ returned $?\n" for find(qr/\.PL$/, 'lib');
 		my %modules = map { $_ => catfile('blib', $_) } find(qr/\.p(?:m|od)$/, 'lib');
 		my %scripts = map { $_ => catfile('blib', $_) } find(qr//, 'script');
@@ -91,6 +105,7 @@ my %actions = (
 	test => sub {
 		my %opt = @_;
 		die "Must run `./Build build` first\n" if not -d 'blib';
+		die "Missing prerequisites\n" if check_dependencies($opt{meta}, qw/configure runtime build test/);
 		require TAP::Harness;
 		my $tester = TAP::Harness->new({verbosity => $opt{verbose}, lib => [ map { rel2abs(catdir(qw/blib/, $_)) } qw/arch lib/ ], color => -t STDOUT});
 		$tester->runtests(sort +find(qr/\.t$/, 't'))->has_errors and exit 1;
@@ -99,6 +114,7 @@ my %actions = (
 		my %opt = @_;
 		die "Must run `./Build build` first\n" if not -d 'blib';
 		install($opt{install_paths}->install_map, @opt{qw/verbose dry_run uninst/});
+		die "Missing prerequisites\n" if check_dependencies($opt{meta}, qw/runtime/);
 	},
 );
 
@@ -114,6 +130,7 @@ sub Build {
 
 sub Build_PL {
 	my $meta = get_meta();
+	die "Missing prerequisites\n" if check_dependencies($meta, qw/configure/);
 	printf "Creating new 'Build' script for '%s' version '%s'\n", $meta->name, $meta->version;
 	my $dir = $meta->name eq 'Module-Build-Tiny' ? "use lib 'lib';" : '';
 	write_file('Build', 'raw', "#!perl\n$dir\nuse Module::Build::Tiny;\nBuild();\n");
@@ -157,6 +174,8 @@ than 120, yet supports the features needed by most distributions.
 =item * Man page generation
 
 =item * Generated code from PL files
+
+=item * Verifying prerequisites at each phase, as per L<CPAN::Meta::Spec/Prereq Spec>
 
 =back
 
@@ -223,4 +242,4 @@ L<Module::Build>
 
 =cut
 
-# vi:et:sts=2:sw=2:ts=2
+# vi:noet:sts=2:sw=2:ts=2
