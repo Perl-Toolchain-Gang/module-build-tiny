@@ -50,9 +50,11 @@ sub process_xs {
 	my (undef, @dirnames) = splitdir(dirname($source));
 	my $file_base = basename($source, '.xs');
 	my $archdir = catdir(qw/blib arch auto/, @dirnames, $file_base);
+	my $tempdir = 'temp';
 
-	my $c_file = catfile('lib', @dirnames, "$file_base.c");
+	my $c_file = catfile($tempdir, "$file_base.c");
 	require ExtUtils::ParseXS;
+	mkpath($tempdir, $options->{verbose}, oct '755');
 	ExtUtils::ParseXS::process_file(filename => $source, prototypes => 0, output => $c_file);
 
 	my $version = $options->{meta}->version;
@@ -102,11 +104,11 @@ my %actions = (
 	},
 	clean => sub {
 		my %opt = @_;
-		rmtree('blib', $opt{verbose});
+		rmtree($_, $opt{verbose}) for qw/blib temp/;
 	},
 	realclean => sub {
 		my %opt = @_;
-		rmtree($_, $opt{verbose}) for qw/blib Build _build_params MYMETA.yml MYMETA.json/;
+		rmtree($_, $opt{verbose}) for qw/blib temp Build _build_params MYMETA.yml MYMETA.json/;
 	},
 );
 
