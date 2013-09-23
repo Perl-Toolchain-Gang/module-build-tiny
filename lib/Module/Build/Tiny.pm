@@ -17,13 +17,13 @@ use Getopt::Long qw/GetOptions/;
 use JSON::PP 2 qw/encode_json decode_json/;
 
 sub write_file {
-	my ($filename, $mode, $content) = @_;
-	open my $fh, ">:$mode", $filename or die "Could not open $filename: $!\n";
+	my ($filename, $content) = @_;
+	open my $fh, '>', $filename or die "Could not open $filename: $!\n";
 	print $fh $content;
 }
 sub read_file {
 	my ($filename, $mode) = @_;
-	open my $fh, "<:$mode", $filename or die "Could not open $filename: $!\n";
+	open my $fh, '<', $filename or die "Could not open $filename: $!\n";
 	return do { local $/; <$fh> };
 }
 
@@ -115,7 +115,7 @@ my %actions = (
 sub Build {
 	my $action = @ARGV && $ARGV[0] =~ /\A\w+\z/ ? shift @ARGV : 'build';
 	die "No such action '$action'\n" if not $actions{$action};
-	unshift @ARGV, @{ decode_json(read_file('_build_params', 'utf8')) };
+	unshift @ARGV, @{ decode_json(read_file('_build_params')) };
 	GetOptions(\my %opt, qw/install_base=s install_path=s% installdirs=s destdir=s prefix=s config=s% uninst:1 verbose:1 dry_run:1 pureperl-only:1 create_packlist=i/);
 	$_ = detildefy($_) for grep { defined } @opt{qw/install_base destdir prefix/}, values %{ $opt{install_path} };
 	@opt{ 'config', 'meta' } = (ExtUtils::Config->new($opt{config}), get_meta());
@@ -126,10 +126,10 @@ sub Build_PL {
 	my $meta = get_meta();
 	printf "Creating new 'Build' script for '%s' version '%s'\n", $meta->name, $meta->version;
 	my $dir = $meta->name eq 'Module-Build-Tiny' ? "use lib 'lib';" : '';
-	write_file('Build', 'raw', "#!perl\n$dir\nuse Module::Build::Tiny;\nBuild();\n");
+	write_file('Build', "#!perl\n$dir\nuse Module::Build::Tiny;\nBuild();\n");
 	make_executable('Build');
 	my @env = defined $ENV{PERL_MB_OPT} ? split_like_shell($ENV{PERL_MB_OPT}) : ();
-	write_file('_build_params', 'utf8', encode_json([ @env, @ARGV ]));
+	write_file('_build_params', encode_json([ @env, @ARGV ]));
 	$meta->save(@$_) for ['MYMETA.json'], [ 'MYMETA.yml' => { version => 1.4 } ];
 }
 
