@@ -4,6 +4,7 @@ Revision history for Module::Build::Tiny
           Revert "Removed clean and realclean actions"
           Build .c and .o in temp/ instead of lib
           Got rid of IO layers
+          Separate libdoc and bindoc checks
 
 0.027     2013-09-09 11:43:12 Europe/Amsterdam
           Various documentation updates
