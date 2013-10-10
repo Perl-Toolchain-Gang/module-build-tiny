@@ -96,8 +96,8 @@ my %actions = (
 	test => sub {
 		my %opt = @_;
 		die "Must run `./Build build` first\n" if not -d 'blib';
-		require TAP::Harness;
-		my $tester = TAP::Harness->new({ verbosity => $opt{verbose}, lib => [ map { rel2abs(catdir(qw/blib/, $_)) } qw/arch lib/ ], color => -t STDOUT });
+		require TAP::Harness::Env;
+		my $tester = TAP::Harness::Env->create({ verbosity => $opt{verbose}, lib => [ map { rel2abs(catdir(qw/blib/, $_)) } qw/arch lib/ ], color => -t STDOUT });
 		$tester->runtests(sort +find(qr/\.t$/, 't'))->has_errors and exit 1;
 	},
 	install => sub {
