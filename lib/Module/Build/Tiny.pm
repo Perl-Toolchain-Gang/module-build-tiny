@@ -12,7 +12,7 @@ use ExtUtils::InstallPaths 0.002;
 use File::Basename qw/basename dirname/;
 use File::Find ();
 use File::Path qw/mkpath rmtree/;
-use File::Spec::Functions qw/catfile catdir rel2abs abs2rel splitdir/;
+use File::Spec::Functions qw/catfile catdir rel2abs abs2rel splitdir curdir/;
 use Getopt::Long qw/GetOptions/;
 use JSON::PP 2 qw/encode_json decode_json/;
 
@@ -60,10 +60,11 @@ sub process_xs {
 	my $version = $options->{meta}->version;
 	require ExtUtils::CBuilder;
 	my $builder = ExtUtils::CBuilder->new(config => $options->{config}->values_set);
-	my $ob_file = $builder->compile(source => $c_file, defines => { VERSION => qq/"$version"/, XS_VERSION => qq/"$version"/ });
+	my $ob_file = $builder->compile(source => $c_file, defines => { VERSION => qq/"$version"/, XS_VERSION => qq/"$version"/ }, include_dirs => curdir);
 
 	mkpath($archdir, $options->{verbose}, oct '755') unless -d $archdir;
-	return $builder->link(objects => $ob_file, lib_file => catfile($archdir, "$file_base." . $options->{config}->get('dlext')), module_name => join '::', @dirnames, $file_base);
+	my $lib_file = catfile($archdir, "$file_base." . $options->{config}->get('dlext'));
+	return $builder->link(objects => $ob_file, lib_file => $lib_file, module_name => join '::', @dirnames, $file_base);
 }
 
 sub find {

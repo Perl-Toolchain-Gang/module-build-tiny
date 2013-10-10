@@ -1,6 +1,7 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+          Add main dir to include path
 
 0.028     2013-09-29 19:58:39 Europe/Amsterdam
           Revert "Removed clean and realclean actions"
