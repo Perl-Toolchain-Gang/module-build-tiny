@@ -1,6 +1,8 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+
+0.030     2013-10-11 12:01:24 Europe/Amsterdam
           Added workaround for #54606 
 
 0.029     2013-10-11 00:39:20 Europe/Amsterdam
