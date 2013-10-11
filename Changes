@@ -1,6 +1,7 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+          Added workaround for #54606 
 
 0.029     2013-10-11 00:39:20 Europe/Amsterdam
           Respect harness environmental variables
