@@ -13,7 +13,7 @@ use File::Basename qw/basename dirname/;
 use File::Find ();
 use File::Path qw/mkpath rmtree/;
 use File::Spec::Functions qw/catfile catdir rel2abs abs2rel splitdir curdir/;
-use Getopt::Long qw/GetOptions/;
+use Getopt::Long qw/GetOptionsFromArray/;
 use JSON::PP 2 qw/encode_json decode_json/;
 
 sub write_file {
@@ -118,8 +118,8 @@ my %actions = (
 sub Build {
 	my $action = @ARGV && $ARGV[0] =~ /\A\w+\z/ ? shift @ARGV : 'build';
 	die "No such action '$action'\n" if not $actions{$action};
-	unshift @ARGV, @{ decode_json(read_file('_build_params')) };
-	GetOptions(\my %opt, qw/install_base=s install_path=s% installdirs=s destdir=s prefix=s config=s% uninst:1 verbose:1 dry_run:1 pureperl-only:1 create_packlist=i/);
+	my($env, $bargv) = @{ decode_json(read_file('_build_params')) };
+	GetOptionsFromArray($_, \my %opt, qw/install_base=s install_path=s% installdirs=s destdir=s prefix=s config=s% uninst:1 verbose:1 dry_run:1 pureperl-only:1 create_packlist=i/) for ($env, $bargv, \@ARGV);
 	$_ = detildefy($_) for grep { defined } @opt{qw/install_base destdir prefix/}, values %{ $opt{install_path} };
 	@opt{ 'config', 'meta' } = (ExtUtils::Config->new($opt{config}), get_meta());
 	$actions{$action}->(%opt, install_paths => ExtUtils::InstallPaths->new(%opt, dist_name => $opt{meta}->name));
@@ -132,7 +132,7 @@ sub Build_PL {
 	write_file('Build', "#!perl\n$dir\nuse Module::Build::Tiny;\nBuild();\n");
 	make_executable('Build');
 	my @env = defined $ENV{PERL_MB_OPT} ? split_like_shell($ENV{PERL_MB_OPT}) : ();
-	write_file('_build_params', encode_json([ @env, @ARGV ]));
+	write_file('_build_params', encode_json([ \@env, \@ARGV ]));
 	$meta->save(@$_) for ['MYMETA.json'], [ 'MYMETA.yml' => { version => 1.4 } ];
 }
 

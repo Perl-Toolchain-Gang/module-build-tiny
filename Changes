@@ -1,6 +1,7 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+          Process argument sources separately
 
 0.030     2013-10-11 12:01:24 Europe/Amsterdam
           Added workaround for #54606 
