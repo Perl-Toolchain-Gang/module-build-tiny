@@ -63,7 +63,9 @@ sub process_xs {
 	my $ob_file = $builder->compile(source => $c_file, defines => { VERSION => qq/"$version"/, XS_VERSION => qq/"$version"/ }, include_dirs => [ curdir ]);
 
 	mkpath($archdir, $options->{verbose}, oct '755') unless -d $archdir;
-	my $lib_file = catfile($archdir, "$file_base." . $options->{config}->get('dlext'));
+	require DynaLoader;
+	my $modfname = defined &DynaLoader::mod2fname ? DynaLoader::mod2fname([@dirnames, $file_base]) : $file_base;
+	my $lib_file = catfile($archdir, "$modfname." . $options->{config}->get('dlext'));
 	return $builder->link(objects => $ob_file, lib_file => $lib_file, module_name => join '::', @dirnames, $file_base);
 }
 
