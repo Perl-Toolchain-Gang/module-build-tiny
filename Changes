@@ -1,6 +1,8 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+
+0.032     2014-01-20 20:07:13CET+0100 Europe/Amsterdam
           Fix env options and Build.PL options being ignored (regression in 0.031)
 
 0.031     2014-01-20 16:24:58CET+0100 Europe/Amsterdam
