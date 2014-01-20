@@ -1,6 +1,8 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+
+0.031     2014-01-20 16:24:58CET+0100 Europe/Amsterdam
           Process argument sources separately
           Use mod2fname appropriately
 
