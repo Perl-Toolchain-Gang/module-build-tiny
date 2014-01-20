@@ -1,6 +1,7 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+          Require Getopt::Long 2.36
 
 0.032     2014-01-20 20:07:13CET+0100 Europe/Amsterdam
           Fix env options and Build.PL options being ignored (regression in 0.031)
