@@ -56,7 +56,7 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
 #--------------------------------------------------------------------------#
 
 {
-  is(system($^X, "Build.PL"), 0, "Ran Build.PL");
+  is(system($^X, 'Build.PL', '--install_base=install'), 0, 'Ran Build.PL');
   ok( -f 'Build', "Build created" );
   if ($^O eq 'MSWin32') {
     ok( -f 'Build.bat', 'Build is executable');
@@ -119,6 +119,15 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
     XSLoader::load('Simple');
     is(Simple::foo(), "Hello World!\n");
   }
+}
+
+{
+  ok( open2(my($in, $out), $^X, Build => 'install'), 'Could run Build install' );
+  my $output = do { local $/; <$in> };
+  like($output, qr[Installing install/lib/perl5/$Config{archname}/Foo/Bar\.pm], 'Build install output looks correctly');
+
+  ok( -f "install/lib/perl5/$Config{archname}/Foo/Bar.pm", 'Module is installed');
+  ok( -f 'install/bin/simple', 'Script is installed');
 }
 
 done_testing;
