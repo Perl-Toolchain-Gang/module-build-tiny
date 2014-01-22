@@ -1,4 +1,5 @@
 package Module::Build::Tiny;
+
 use strict;
 use warnings;
 use Exporter 5.57 'import';
