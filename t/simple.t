@@ -124,7 +124,8 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
 {
   ok( open2(my($in, $out), $^X, Build => 'install'), 'Could run Build install' );
   my $output = do { local $/; <$in> };
-  like($output, qr[Installing install/lib/perl5/$Config{archname}/Foo/Bar\.pm], 'Build install output looks correctly');
+  my $filename = quotemeta catfile(qw/install lib perl5/, $Config{archname}, qw/Foo Bar.pm/);
+  like($output, qr/Installing $filename/, 'Build install output looks correctly');
 
   ok( -f "install/lib/perl5/$Config{archname}/Foo/Bar.pm", 'Module is installed');
   ok( -f 'install/bin/simple', 'Script is installed');
