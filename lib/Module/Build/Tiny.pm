@@ -203,7 +203,7 @@ than 120, yet supports the features needed by most distributions.
 
 =head2 Directory structure
 
-Your .pm and .pod files must be in F<lib/>.  Any executables must be in
+Your .pm, .xs and .pod files must be in F<lib/>.  Any executables must be in
 F<script/>.  Test files must be in F<t/>. Dist sharedirs must be in F<share/>.
 
 
