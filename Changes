@@ -1,6 +1,7 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+          Fix install test in absence of a compiler
 
 0.034     2014-01-22 03:40:21CET+0100 Europe/Amsterdam
           Make install tests more platform independent
