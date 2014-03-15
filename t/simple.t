@@ -117,7 +117,7 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
 
   if ($has_compiler) {
     XSLoader::load('Simple');
-    is(Simple::foo(), "Hello World!\n");
+    is(Simple::foo(), "Hello World!\n", 'Can run XSub Simple::foo');
   }
 }
 
