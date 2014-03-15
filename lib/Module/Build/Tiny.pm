@@ -103,6 +103,7 @@ my %actions = (
 		require TAP::Harness::Env;
 		my %test_args = (
 			(verbosity => $opt{verbose}) x!! exists $opt{verbose},
+			(jobs => $opt{jobs}) x!! exists $opt{jobs},
 			(color => 1) x !!-t STDOUT,
 			lib => [ map { rel2abs(catdir(qw/blib/, $_)) } qw/arch lib/ ],
 		);
@@ -129,7 +130,7 @@ sub Build {
 	die "No such action '$action'\n" if not $actions{$action};
 	my($env, $bargv) = @{ decode_json(read_file('_build_params')) };
 	my %opt;
-	GetOptionsFromArray($_, \%opt, qw/install_base=s install_path=s% installdirs=s destdir=s prefix=s config=s% uninst:1 verbose:1 dry_run:1 pureperl-only:1 create_packlist=i/) for ($env, $bargv, \@ARGV);
+	GetOptionsFromArray($_, \%opt, qw/install_base=s install_path=s% installdirs=s destdir=s prefix=s config=s% uninst:1 verbose:1 dry_run:1 pureperl-only:1 create_packlist=i jobs=i/) for ($env, $bargv, \@ARGV);
 	$_ = detildefy($_) for grep { defined } @opt{qw/install_base destdir prefix/}, values %{ $opt{install_path} };
 	@opt{ 'config', 'meta' } = (ExtUtils::Config->new($opt{config}), get_meta());
 	$actions{$action}->(%opt, install_paths => ExtUtils::InstallPaths->new(%opt, dist_name => $opt{meta}->name));
