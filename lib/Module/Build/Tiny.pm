@@ -119,6 +119,9 @@ my %actions = (
 	},
 );
 
+# Aliasing pure_install to install
+$actions{'pure_install'} = $actions{'install'};
+
 sub Build {
 	my $action = @ARGV && $ARGV[0] =~ /\A\w+\z/ ? shift @ARGV : 'build';
 	die "No such action '$action'\n" if not $actions{$action};
