@@ -2,6 +2,7 @@ Revision history for Module::Build::Tiny
 
 {{$NEXT}}
           Add --jobs argument to MBT
+          Add xs directory to include list
 
 0.035     2014-02-17 23:18:54CET+0100 Europe/Amsterdam
           Fix install test in absence of a compiler

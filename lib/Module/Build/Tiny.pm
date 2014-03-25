@@ -61,7 +61,7 @@ sub process_xs {
 	my $version = $options->{meta}->version;
 	require ExtUtils::CBuilder;
 	my $builder = ExtUtils::CBuilder->new(config => $options->{config}->values_set);
-	my $ob_file = $builder->compile(source => $c_file, defines => { VERSION => qq/"$version"/, XS_VERSION => qq/"$version"/ }, include_dirs => [ curdir ]);
+	my $ob_file = $builder->compile(source => $c_file, defines => { VERSION => qq/"$version"/, XS_VERSION => qq/"$version"/ }, include_dirs => [ curdir, dirname($source) ]);
 
 	require DynaLoader;
 	my $mod2fname = defined &DynaLoader::mod2fname ? \&DynaLoader::mod2fname : sub { return $_[0][-1] };
