@@ -1,6 +1,8 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+
+0.036     2014-05-02 14:51:02CEST+0200 Europe/Amsterdam
           Add --jobs argument to MBT
           Add xs directory to include list
 
