@@ -1,6 +1,8 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+          Fix tests which broke with ExtUtils::Install 1.68 and
+          PERL_INSTALL_QUIET=1 (RT#97464, Karen Etheridge)
 
 0.036     2014-05-02 14:51:02CEST+0200 Europe/Amsterdam
           Add --jobs argument to MBT

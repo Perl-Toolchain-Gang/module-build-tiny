@@ -77,6 +77,9 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
 #--------------------------------------------------------------------------#
 
 {
+  # ExtUtils::Install 1.68 added PERL_INSTALL_QUIET, which suppresses the
+  # output we are testing for
+  local $ENV{PERL_INSTALL_QUIET};
   ok( open2(my($in, $out), $^X, 'Build'), 'Could run Build' );
   my $output = do { local $/; <$in> };
   like( $output, qr{lib/Foo/Bar\.pm}, 'Build output looks correctly');
