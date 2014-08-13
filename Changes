@@ -1,6 +1,7 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+          Scrub PERL_MB_OPT in tests too
 
 0.037     2014-07-27 16:14:54+02:00 Europe/Amsterdam
           Scrub environment variable in tests

@@ -11,6 +11,7 @@ use DistGen qw/undent/;
 use XSLoader;
 
 local $ENV{PERL_INSTALL_QUIET};
+local $ENV{PERL_MB_OPT};
 
 #--------------------------------------------------------------------------#
 # fixtures
