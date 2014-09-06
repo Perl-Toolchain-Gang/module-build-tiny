@@ -260,7 +260,7 @@ Module::Build has an extremely permissive way of argument handling, Module::Buil
 
 =item * .modulebuildrc
 
-Module::Build::Tiny does not support .modulebuildrc files. In particular, this means that versions of local::lib older than 1.006008 may break. Upgrading it resolves this issue.
+Module::Build::Tiny does not support .modulebuildrc files. In particular, this means that versions of local::lib older than 1.006008 may break with C<ERROR: Can't create /usr/local/somepath>. If the output of C<perl -Mlocal::lib> contains C<MODULEBUILDRC> but not C<PERL_MB_OPT >, you will need to upgrade it to resolve this issue.
 
 =back
 
