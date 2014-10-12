@@ -1,6 +1,8 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+
+0.039     2014-10-12 10:38:39+02:00 Europe/Amsterdam
           Supply basename to *.PL files as its args
 
 0.038     2014-09-06 11:28:23+02:00 Europe/Amsterdam
