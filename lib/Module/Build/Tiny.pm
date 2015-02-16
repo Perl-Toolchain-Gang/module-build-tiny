@@ -82,7 +82,7 @@ my %actions = (
 	build => sub {
 		my %opt = @_;
 		for my $pl_file (find(qr/\.PL$/, 'lib')) {
-                       (my $pm = $pl_file) =~ s/\.PL$//;
+			(my $pm = $pl_file) =~ s/\.PL$//;
 			system $^X, $pl_file, $pm and die "$pl_file returned $?\n";
 		}
 		my %modules = map { $_ => catfile('blib', $_) } find(qr/\.p(?:m|od)$/, 'lib');
