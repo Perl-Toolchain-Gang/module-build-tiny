@@ -73,6 +73,12 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
 
   like( $line, qr{\A$interpreter}, "Build has shebang line with \$^X" );
   ok( -f '_build_params', "_build_params created" );
+  ok( -f '_build/prereqs', '_build/prereqs created');
+  my $prereqs = eval do { local $/; open $fh, '<', '_build/prereqs'; <$fh> } or die $@;
+  is_deeply($prereqs->{requires}, {
+    perl                  => '5.006',
+	'Module::Build::Tiny' => 0
+  }, 'Prereqs are as expected');
 }
 
 #--------------------------------------------------------------------------#

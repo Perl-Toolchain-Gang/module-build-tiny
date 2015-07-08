@@ -148,6 +148,15 @@ sub Build_PL {
 	my @env = defined $ENV{PERL_MB_OPT} ? split_like_shell($ENV{PERL_MB_OPT}) : ();
 	write_file('_build_params', encode_json([ \@env, \@ARGV ]));
 	$meta->save(@$_) for ['MYMETA.json'], [ 'MYMETA.yml' => { version => 1.4 } ];
+	my $prereqs = $meta->effective_prereqs;
+	my %build_params = (
+		requires => $prereqs->requirements_for('runtime', 'requires')->as_string_hash,
+		build_requires => $prereqs->merged_requirements(['build', 'test'], ['requires'])->as_string_hash,
+	);
+	mkdir '_build';
+	require Data::Dumper;
+	my $data = Data::Dumper->new([\%build_params])->Purity(1)->Terse(1)->Dump;
+	write_file('_build/prereqs', $data);
 }
 
 1;
