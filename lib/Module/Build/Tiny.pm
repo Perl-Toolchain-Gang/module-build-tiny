@@ -15,7 +15,7 @@ use File::Find ();
 use File::Path qw/mkpath rmtree/;
 use File::Spec::Functions qw/catfile catdir rel2abs abs2rel splitdir curdir/;
 use Getopt::Long 2.36 qw/GetOptionsFromArray/;
-use JSON::PP 2 qw/encode_json decode_json/;
+use JSON::MaybeXS qw/encode_json decode_json/;
 
 sub write_file {
 	my ($filename, $content) = @_;
