@@ -139,10 +139,15 @@ sub Build {
 	$actions{$action}->(%opt, install_paths => ExtUtils::InstallPaths->new(%opt, dist_name => $opt{meta}->name));
 }
 
+sub _unsafe_inc_string {
+    return exists $ENV{PERL_USE_UNSAFE_INC} ? '' : '$ENV{PERL_USE_UNSAFE_INC}=1;';
+}
+
+
 sub Build_PL {
 	my $meta = get_meta();
 	printf "Creating new 'Build' script for '%s' version '%s'\n", $meta->name, $meta->version;
-	my $dir = $meta->name eq 'Module-Build-Tiny' ? "use lib 'lib';" : '';
+	my $dir = $meta->name eq 'Module-Build-Tiny' ? "use lib 'lib';" : _unsafe_inc_string();
 	write_file('Build', "#!perl\n$dir\nuse Module::Build::Tiny;\nBuild();\n");
 	make_executable('Build');
 	my @env = defined $ENV{PERL_MB_OPT} ? split_like_shell($ENV{PERL_MB_OPT}) : ();
