@@ -104,6 +104,7 @@ my %actions = (
 		my %opt = @_;
 		die "Must run `./Build build` first\n" if not -d 'blib';
 		require TAP::Harness::Env;
+		local $ENV{PERL_USE_UNSAFE_INC} = exists $ENV{PERL_USE_UNSAFE_INC} ? $ENV{PERL_USE_UNSAFE_INC} : 1; # Unit tests often need . in @INC.
 		my %test_args = (
 			(verbosity => $opt{verbose}) x!! exists $opt{verbose},
 			(jobs => $opt{jobs}) x!! exists $opt{jobs},
