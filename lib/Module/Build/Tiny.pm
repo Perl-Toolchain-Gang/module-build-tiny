@@ -99,6 +99,7 @@ my %actions = (
 		if ($opt{install_paths}->install_destination('libdoc') && $opt{install_paths}->is_default_installable('libdoc')) {
 			manify($_, catfile('blib', 'libdoc', man3_pagename($_)), $opt{config}->get('man3ext'), \%opt) for keys %modules;
 		}
+		return 0;
 	},
 	test => sub {
 		my %opt = @_;
@@ -111,20 +112,23 @@ my %actions = (
 			lib => [ map { rel2abs(catdir(qw/blib/, $_)) } qw/arch lib/ ],
 		);
 		my $tester = TAP::Harness::Env->create(\%test_args);
-		$tester->runtests(sort +find(qr/\.t$/, 't'))->has_errors and exit 1;
+		return $tester->runtests(sort +find(qr/\.t$/, 't'))->has_errors;
 	},
 	install => sub {
 		my %opt = @_;
 		die "Must run `./Build build` first\n" if not -d 'blib';
 		install($opt{install_paths}->install_map, @opt{qw/verbose dry_run uninst/});
+		return 0;
 	},
 	clean => sub {
 		my %opt = @_;
 		rmtree($_, $opt{verbose}) for qw/blib temp/;
+		return 0;
 	},
 	realclean => sub {
 		my %opt = @_;
 		rmtree($_, $opt{verbose}) for qw/blib temp Build _build_params MYMETA.yml MYMETA.json/;
+		return 0;
 	},
 );
 
@@ -136,7 +140,7 @@ sub Build {
 	GetOptionsFromArray($_, \%opt, qw/install_base=s install_path=s% installdirs=s destdir=s prefix=s config=s% uninst:1 verbose:1 dry_run:1 pureperl-only:1 create_packlist=i jobs=i/) for ($env, $bargv, \@ARGV);
 	$_ = detildefy($_) for grep { defined } @opt{qw/install_base destdir prefix/}, values %{ $opt{install_path} };
 	@opt{ 'config', 'meta' } = (ExtUtils::Config->new($opt{config}), get_meta());
-	$actions{$action}->(%opt, install_paths => ExtUtils::InstallPaths->new(%opt, dist_name => $opt{meta}->name));
+	exit $actions{$action}->(%opt, install_paths => ExtUtils::InstallPaths->new(%opt, dist_name => $opt{meta}->name));
 }
 
 sub Build_PL {
