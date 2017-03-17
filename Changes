@@ -1,6 +1,8 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+          Fix tests which broke with ExtUtils::Install 1.68 and
+          PERL_INSTALL_QUIET=1 (RT#97464, Karen Etheridge)
 
 0.039     2014-10-12 10:38:39+02:00 Europe/Amsterdam
           Supply basename to *.PL files as its args
