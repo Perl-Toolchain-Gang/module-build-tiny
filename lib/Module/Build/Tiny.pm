@@ -85,10 +85,11 @@ my %actions = (
 			(my $pm = $pl_file) =~ s/\.PL$//;
 			system $^X, $pl_file, $pm and die "$pl_file returned $?\n";
 		}
-		my %modules = map { $_ => catfile('blib', $_) } find(qr/\.p(?:m|od)$/, 'lib');
+		my %modules = map { $_ => catfile('blib', $_) } find(qr/\.pm$/, 'lib');
+		my %docs    = map { $_ => catfile('blib', $_) } find(qr/\.pod$/, 'lib');
 		my %scripts = map { $_ => catfile('blib', $_) } find(qr//, 'script');
 		my %shared  = map { $_ => catfile(qw/blib lib auto share dist/, $opt{meta}->name, abs2rel($_, 'share')) } find(qr//, 'share');
-		pm_to_blib({ %modules, %scripts, %shared }, catdir(qw/blib lib auto/));
+		pm_to_blib({ %modules, %docs, %scripts, %shared }, catdir(qw/blib lib auto/));
 		make_executable($_) for values %scripts;
 		mkpath(catdir(qw/blib arch/), $opt{verbose});
 		process_xs($_, \%opt) for find(qr/.xs$/, 'lib');
@@ -97,7 +98,7 @@ my %actions = (
 			manify($_, catfile('blib', 'bindoc', man1_pagename($_)), $opt{config}->get('man1ext'), \%opt) for keys %scripts;
 		}
 		if ($opt{install_paths}->install_destination('libdoc') && $opt{install_paths}->is_default_installable('libdoc')) {
-			manify($_, catfile('blib', 'libdoc', man3_pagename($_)), $opt{config}->get('man3ext'), \%opt) for keys %modules;
+			manify($_, catfile('blib', 'libdoc', man3_pagename($_)), $opt{config}->get('man3ext'), \%opt) for keys %modules, keys %docs;
 		}
 		return 0;
 	},
