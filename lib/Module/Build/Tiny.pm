@@ -23,7 +23,7 @@ sub write_file {
 	print $fh $content;
 }
 sub read_file {
-	my ($filename, $mode) = @_;
+	my ($filename) = @_;
 	open my $fh, '<', $filename or die "Could not open $filename: $!\n";
 	return do { local $/; <$fh> };
 }
