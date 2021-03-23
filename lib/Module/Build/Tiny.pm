@@ -78,6 +78,12 @@ sub find {
 	return @ret;
 }
 
+sub contains_pod {
+	my ($file) = @_;
+	return unless -T $file;
+	return read_file($file) =~ /^\=(?:head|pod|item)/;
+}
+
 my %actions = (
 	build => sub {
 		my %opt = @_;
@@ -98,6 +104,7 @@ my %actions = (
 		if ($opt{install_paths}->install_destination('bindoc') && $opt{install_paths}->is_default_installable('bindoc')) {
 			my $section = $opt{config}->get('man1ext');
 			for my $input (keys %scripts, keys %sdocs) {
+				next unless contains_pod($input);
 				my $output = catfile('blib', 'bindoc', man1_pagename($input));
 				manify($input, $output, $section, \%opt);
 			}
@@ -105,6 +112,7 @@ my %actions = (
 		if ($opt{install_paths}->install_destination('libdoc') && $opt{install_paths}->is_default_installable('libdoc')) {
 			my $section = $opt{config}->get('man3ext');
 			for my $input (keys %modules, keys %docs) {
+				next unless contains_pod($input);
 				my $output = catfile('blib', 'libdoc', man3_pagename($input));
 				manify($input, $output, $section, \%opt);
 			}
