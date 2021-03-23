@@ -96,10 +96,18 @@ my %actions = (
 		process_xs($_, \%opt) for find(qr/.xs$/, 'lib');
 
 		if ($opt{install_paths}->install_destination('bindoc') && $opt{install_paths}->is_default_installable('bindoc')) {
-			manify($_, catfile('blib', 'bindoc', man1_pagename($_)), $opt{config}->get('man1ext'), \%opt) for keys %scripts, keys %sdocs;
+			my $section = $opt{config}->get('man1ext');
+			for my $input (keys %scripts, keys %sdocs) {
+				my $output = catfile('blib', 'bindoc', man1_pagename($input));
+				manify($input, $output, $section, \%opt);
+			}
 		}
 		if ($opt{install_paths}->install_destination('libdoc') && $opt{install_paths}->is_default_installable('libdoc')) {
-			manify($_, catfile('blib', 'libdoc', man3_pagename($_)), $opt{config}->get('man3ext'), \%opt) for keys %modules, keys %docs;
+			my $section = $opt{config}->get('man3ext');
+			for my $input (keys %modules, keys %docs) {
+				my $output = catfile('blib', 'libdoc', man3_pagename($input));
+				manify($input, $output, $section, \%opt);
+			}
 		}
 		return 0;
 	},
