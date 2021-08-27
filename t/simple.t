@@ -128,7 +128,21 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
   ok( open2(my($in, $out), $^X, Build => 'install'), 'Could run Build install' );
   my $output = do { local $/; <$in> };
   my $filename = catfile(qw/install lib perl5/, ($has_compiler? $Config{archname} : () ), qw/Foo Bar.pm/);
-  like($output, qr/Installing \Q$filename/, 'Build install output looks correctly');
+  like($output, qr/Installing \Q$filename/, 'Build install output looks correct');
+
+  ok( -f $filename, 'Module is installed');
+  ok( -f 'install/bin/simple', 'Script is installed');
+
+  # Reset for the next test.
+  unlink $filename;
+  unlink 'install/bin/simple';
+}
+
+{
+  ok( open2(my($in, $out), $^X, Build => 'pure_install'), 'Could run Build pure_install' );
+  my $output = do { local $/; <$in> };
+  my $filename = catfile(qw/install lib perl5/, ($has_compiler? $Config{archname} : () ), qw/Foo Bar.pm/);
+  like($output, qr/Installing \Q$filename/, 'Build pure_install output looks correct');
 
   ok( -f $filename, 'Module is installed');
   ok( -f 'install/bin/simple', 'Script is installed');

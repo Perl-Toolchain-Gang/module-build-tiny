@@ -120,6 +120,12 @@ my %actions = (
 		install($opt{install_paths}->install_map, @opt{qw/verbose dry_run uninst/});
 		return 0;
 	},
+	pure_install => sub {
+		my %opt = @_;
+		die "Must run `./Build build` first\n" if not -d 'blib';
+		install($opt{install_paths}->install_map, @opt{qw/verbose dry_run uninst/});
+		return 0;
+	},
 	clean => sub {
 		my %opt = @_;
 		rmtree($_, $opt{verbose}) for qw/blib temp/;
