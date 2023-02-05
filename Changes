@@ -2,6 +2,8 @@ Revision history for Module::Build::Tiny
 
 {{$NEXT}}
           - Manify .pod after .pm
+          - Filter out script documentation from scripts
+          - Don't manify podless modules/scripts
 
 0.039     2014-10-12 10:38:39+02:00 Europe/Amsterdam
           Supply basename to *.PL files as its args
