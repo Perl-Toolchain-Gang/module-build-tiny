@@ -189,7 +189,7 @@ Traditionally, Build.PL uses Module::Build as the underlying build system.
 This module provides a simple, lightweight, drop-in replacement.
 
 Whereas Module::Build has over 6,700 lines of code; this module has less
-than 120, yet supports the features needed by most distributions.
+than 200, yet supports the features needed by most distributions.
 
 =head2 Supported
 
