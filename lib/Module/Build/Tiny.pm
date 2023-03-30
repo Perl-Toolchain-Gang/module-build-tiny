@@ -61,14 +61,20 @@ sub process_xs {
 	my $version = $options->{meta}->version;
 	require ExtUtils::CBuilder;
 	my $builder = ExtUtils::CBuilder->new(config => $options->{config}->values_set);
-	my $ob_file = $builder->compile(source => $c_file, defines => { VERSION => qq/"$version"/, XS_VERSION => qq/"$version"/ }, include_dirs => [ curdir, 'include', dirname($source) ]);
+	my @objects = $builder->compile(source => $c_file, defines => { VERSION => qq/"$version"/, XS_VERSION => qq/"$version"/ }, include_dirs => [ curdir, 'include', dirname($source) ]);
+
+	my $o = $options->{config}->get('_o');
+	for my $c_source (find(qr/\.c$/, 'src')) {
+		my $o_file = catfile($tempdir, basename($c_source, '.c') . $o);
+		push @objects, $builder->compile(source => $c_file, include_dirs => [ curdir, 'include', dirname($source) ])
+	}
 
 	require DynaLoader;
 	my $mod2fname = defined &DynaLoader::mod2fname ? \&DynaLoader::mod2fname : sub { return $_[0][-1] };
 
 	mkpath($archdir, $options->{verbose}, oct '755') unless -d $archdir;
 	my $lib_file = catfile($archdir, $mod2fname->(\@parts) . '.' . $options->{config}->get('dlext'));
-	return $builder->link(objects => $ob_file, lib_file => $lib_file, module_name => join '::', @parts);
+	return $builder->link(objects => \@objects, lib_file => $lib_file, module_name => join '::', @parts);
 }
 
 sub find {
