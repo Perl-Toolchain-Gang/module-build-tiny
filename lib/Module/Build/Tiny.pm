@@ -87,7 +87,7 @@ sub find {
 sub contains_pod {
 	my ($file) = @_;
 	return unless -T $file;
-	return read_file($file) =~ /^\=(?:head|pod|item)/;
+	return read_file($file) =~ /^\=(?:head|pod|item)/m;
 }
 
 my %actions = (

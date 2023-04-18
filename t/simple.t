@@ -122,6 +122,16 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
     XSLoader::load('Foo::Bar');
     is(Foo::Bar::foo(), "Hello World!\n", 'Can run XSub Foo::Bar::foo');
   }
+
+  require ExtUtils::InstallPaths;
+  if (ExtUtils::InstallPaths->new->is_default_installable('libdoc')) {
+    require ExtUtils::Helpers;
+    my $file = "blib/libdoc/" . ExtUtils::Helpers::man3_pagename($pmfile, '.');
+    ok( -e $file, 'Module gets manified properly');
+  }
+  else {
+    skip 1, 'No manification supported';
+  }
 }
 
 {

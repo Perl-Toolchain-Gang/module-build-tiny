@@ -1,6 +1,7 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+          - Restore manpage generation
 
 0.041     2023-04-17 16:03:06+02:00 Europe/Amsterdam
           - Released without changes from 0.040
