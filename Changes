@@ -1,6 +1,7 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+          - Fix manification test for perls without man paths
 
 0.042     2023-04-18 23:32:40+02:00 Europe/Amsterdam
           - Restore manpage generation
