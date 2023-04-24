@@ -125,7 +125,7 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
 
   SKIP: {
     require ExtUtils::InstallPaths;
-    skip 1, 'No manification supported' if not ExtUtils::InstallPaths->new->is_default_installable('libdoc');
+    skip 'No manification supported', 1 if not ExtUtils::InstallPaths->new->is_default_installable('libdoc');
     require ExtUtils::Helpers;
     my $file = "blib/libdoc/" . ExtUtils::Helpers::man3_pagename($pmfile, '.');
     ok( -e $file, 'Module gets manified properly');
