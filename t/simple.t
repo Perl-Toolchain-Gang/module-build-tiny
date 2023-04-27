@@ -26,21 +26,33 @@ $dist->add_file('script/simple', undent(<<'    ---'));
     print Foo::Bar->VERSION . "\n";
     ---
 my $has_compiler = ExtUtils::CBuilder->new->have_compiler();
-$dist->add_file('lib/Foo/Bar.xs', undent(<<'    ---')) if $has_compiler;
-    #define PERL_NO_GET_CONTEXT
-    #include "EXTERN.h"
-    #include "perl.h"
-    #include "XSUB.h"
 
-    MODULE = Foo::Bar                PACKAGE = Foo::Bar
+if ($has_compiler) {
+	$dist->add_file('lib/Foo/Bar.xs', undent(<<'		---'));
+		#define PERL_NO_GET_CONTEXT
+		#include "EXTERN.h"
+		#include "perl.h"
+		#include "XSUB.h"
+		#include "foo.h"
 
-    const char*
-    foo()
-        CODE:
-        RETVAL = "Hello World!\n";
-        OUTPUT:
-        RETVAL
-    ---
+		MODULE = Foo::Bar                PACKAGE = Foo::Bar
+
+		const char*
+		foo()
+			CODE:
+			RETVAL = foo();
+			OUTPUT:
+			RETVAL
+		---
+	$dist->add_file('include/foo.h', undent(<<'		---'));
+		char* foo();
+		---
+	$dist->add_file('src/foo.c', undent(<<'		---'));
+		char* foo() {
+			return "Hello World!\n";
+		}
+		---
+}
 
 $dist->regen;
 
