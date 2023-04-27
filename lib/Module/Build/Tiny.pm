@@ -66,7 +66,7 @@ sub process_xs {
 	my $o = $options->{config}->get('_o');
 	for my $c_source (find(qr/\.c$/, 'src')) {
 		my $o_file = catfile($tempdir, basename($c_source, '.c') . $o);
-		push @objects, $builder->compile(source => $c_file, include_dirs => [ curdir, 'include', dirname($source) ])
+		push @objects, $builder->compile(source => $c_source, include_dirs => [ curdir, 'include', dirname($source) ])
 	}
 
 	require DynaLoader;
