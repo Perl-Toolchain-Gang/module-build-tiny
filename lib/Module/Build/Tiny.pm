@@ -101,8 +101,9 @@ my %actions = (
 		my %docs    = map { $_ => catfile('blib', $_) } find(qr/\.pod$/, 'lib');
 		my %scripts = map { $_ => catfile('blib', $_) } find(qr//, 'script');
 		my %sdocs   = map { $_ => delete $scripts{$_} } grep { /.pod$/ } keys %scripts;
-		my %shared  = map { $_ => catfile(qw/blib lib auto share dist/, $opt{meta}->name, abs2rel($_, 'share')) } find(qr//, 'share');
-		pm_to_blib({ %modules, %docs, %scripts, %shared }, catdir(qw/blib lib auto/));
+		my %dist_shared  = map { $_ => catfile(qw/blib lib auto share dist/, $opt{meta}->name, abs2rel($_, 'share')) } find(qr//, 'share');
+		my %module_shared  = map { $_ => catfile(qw/blib lib auto share module/, $opt{meta}->name, abs2rel($_, 'module-share')) } find(qr//, 'module-share');
+		pm_to_blib({ %modules, %docs, %scripts, %dist_shared, %module_shared }, catdir(qw/blib lib auto/));
 		make_executable($_) for values %scripts;
 		mkpath(catdir(qw/blib arch/), $opt{verbose});
 		process_xs($_, \%opt) for find(qr/.xs$/, 'lib');
