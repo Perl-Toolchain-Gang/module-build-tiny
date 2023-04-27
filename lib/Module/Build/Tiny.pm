@@ -101,8 +101,9 @@ my %actions = (
 		my %docs    = map { $_ => catfile('blib', $_) } find(qr/\.pod$/, 'lib');
 		my %scripts = map { $_ => catfile('blib', $_) } find(qr//, 'script');
 		my %sdocs   = map { $_ => delete $scripts{$_} } grep { /.pod$/ } keys %scripts;
-		my %shared  = map { $_ => catfile(qw/blib lib auto share dist/, $opt{meta}->name, abs2rel($_, 'share')) } find(qr//, 'share');
-		pm_to_blib({ %modules, %docs, %scripts, %shared }, catdir(qw/blib lib auto/));
+		my %dist_shared  = map { $_ => catfile(qw/blib lib auto share dist/, $opt{meta}->name, abs2rel($_, 'share')) } find(qr//, 'share');
+		my %module_shared  = map { $_ => catfile(qw/blib lib auto share module/, abs2rel($_, 'module-share')) } find(qr//, 'module-share');
+		pm_to_blib({ %modules, %docs, %scripts, %dist_shared, %module_shared }, catdir(qw/blib lib auto/));
 		make_executable($_) for values %scripts;
 		mkpath(catdir(qw/blib arch/), $opt{verbose});
 		my $main_xs = catfile('lib', split /-/, $opt{meta}->name) . '.xs';
@@ -217,6 +218,8 @@ than 200, yet supports the features needed by most distributions.
 
 =item * Generated code from PL files
 
+=item * Module sharedirs
+
 =back
 
 =head2 Not Supported
@@ -229,14 +232,14 @@ than 200, yet supports the features needed by most distributions.
 
 =item * Extending Module::Build::Tiny
 
-=item * Module sharedirs
-
 =back
 
 =head2 Directory structure
 
 Your .pm, .xs and .pod files must be in F<lib/>.  Any executables must be in
-F<script/>.  Test files must be in F<t/>. Dist sharedirs must be in F<share/>.
+F<script/>.  Test files must be in F<t/>. Dist sharedirs must be in F<share/>,
+module sharedirs are under F<module-share> (e.g. F<module-share/Foo-Bar> for
+module C<Foo::Bar>).
 
 C<.c> files in the F<src/> are compiled together with the .xs file matching the
 distribution name.

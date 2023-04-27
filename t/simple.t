@@ -20,6 +20,7 @@ local $ENV{PERL_MB_OPT};
 my $dist = DistGen->new(name => 'Foo::Bar');
 $dist->chdir_in;
 $dist->add_file('share/file.txt', 'FooBarBaz');
+$dist->add_file('module-share/Foo-Bar/file.txt', 'BazBarFoo');
 $dist->add_file('script/simple', undent(<<'    ---'));
     #!perl
     use Foo::Bar;
@@ -126,9 +127,14 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
   if (eval { require File::ShareDir }) {
     ok( -d File::ShareDir::dist_dir('Foo-Bar'), 'sharedir has been made');
     ok( -f File::ShareDir::dist_file('Foo-Bar', 'file.txt'), 'sharedir file has been made');
+    require Foo::Bar;
+    ok( -d File::ShareDir::module_dir('Foo::Bar'), 'sharedir has been made');
+    ok( -f File::ShareDir::module_file('Foo::Bar', 'file.txt'), 'sharedir file has been made');
   }
-  ok( -d catdir(qw/blib lib auto share dist Foo-Bar/), 'sharedir has been made');
-  ok( -f catfile(qw/blib lib auto share dist Foo-Bar file.txt/), 'sharedir file has been made');
+  ok( -d catdir(qw/blib lib auto share dist Foo-Bar/), 'dist sharedir has been made');
+  ok( -f catfile(qw/blib lib auto share dist Foo-Bar file.txt/), 'dist sharedir file has been made');
+  ok( -d catdir(qw/blib lib auto share module Foo-Bar/), 'moduole sharedir has been made');
+  ok( -f catfile(qw/blib lib auto share module Foo-Bar file.txt/), 'module sharedir file has been made');
 
   if ($has_compiler) {
     XSLoader::load('Foo::Bar');
