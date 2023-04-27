@@ -45,7 +45,7 @@ sub manify {
 }
 
 sub process_xs {
-	my ($source, $options) = @_;
+	my ($source, $options, $c_files) = @_;
 
 	die "Can't build xs files under --pureperl-only\n" if $options->{'pureperl-only'};
 	my (undef, @parts) = splitdir(dirname($source));
@@ -64,7 +64,7 @@ sub process_xs {
 	my @objects = $builder->compile(source => $c_file, defines => { VERSION => qq/"$version"/, XS_VERSION => qq/"$version"/ }, include_dirs => [ curdir, 'include', dirname($source) ]);
 
 	my $o = $options->{config}->get('_o');
-	for my $c_source (find(qr/\.c$/, 'src')) {
+	for my $c_source (@{ $c_files }) {
 		my $o_file = catfile($tempdir, basename($c_source, '.c') . $o);
 		push @objects, $builder->compile(source => $c_source, include_dirs => [ curdir, 'include', dirname($source) ])
 	}
@@ -105,7 +105,11 @@ my %actions = (
 		pm_to_blib({ %modules, %docs, %scripts, %shared }, catdir(qw/blib lib auto/));
 		make_executable($_) for values %scripts;
 		mkpath(catdir(qw/blib arch/), $opt{verbose});
-		process_xs($_, \%opt) for find(qr/.xs$/, 'lib');
+		my $main_xs = catfile('lib', split /-/, $opt{meta}->name) . '.xs';
+		for my $xs (find(qr/.xs$/, 'lib')) {
+			my @c_files = $xs eq $main_xs ? find(qr/\.c$/, 'src') : ();
+			process_xs($xs, \%opt, \@c_files);
+		}
 
 		if ($opt{install_paths}->install_destination('bindoc') && $opt{install_paths}->is_default_installable('bindoc')) {
 			my $section = $opt{config}->get('man1ext');
@@ -234,6 +238,8 @@ than 200, yet supports the features needed by most distributions.
 Your .pm, .xs and .pod files must be in F<lib/>.  Any executables must be in
 F<script/>.  Test files must be in F<t/>. Dist sharedirs must be in F<share/>.
 
+C<.c> files in the F<src/> are compiled together with the .xs file matching the
+distribution name.
 
 =head1 USAGE
 
