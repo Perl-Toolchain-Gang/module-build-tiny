@@ -1,6 +1,8 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+
+0.044     2023-04-28 09:19:30+02:00 Europe/Brussels
           - Add module sharedirs
           - Only add src/*.c files to primary XS file
 
