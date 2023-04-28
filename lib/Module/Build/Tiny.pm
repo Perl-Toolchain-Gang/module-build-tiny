@@ -97,6 +97,7 @@ my %actions = (
 			(my $pm = $pl_file) =~ s/\.PL$//;
 			system $^X, $pl_file, $pm and die "$pl_file returned $?\n";
 		}
+		$opt{extra}{before_copy}->(%opt) if $opt{extra}{before_copy};
 		my %modules = map { $_ => catfile('blib', $_) } find(qr/\.pm$/, 'lib');
 		my %docs    = map { $_ => catfile('blib', $_) } find(qr/\.pod$/, 'lib');
 		my %scripts = map { $_ => catfile('blib', $_) } find(qr//, 'script');
@@ -111,6 +112,7 @@ my %actions = (
 			my @c_files = $xs eq $main_xs ? find(qr/\.c$/, 'src') : ();
 			process_xs($xs, \%opt, \@c_files);
 		}
+		$opt{extra}{after_copy}->(%opt) if $opt{extra}{after_copy};
 
 		if ($opt{install_paths}->install_destination('bindoc') && $opt{install_paths}->is_default_installable('bindoc')) {
 			my $section = $opt{config}->get('man1ext');
@@ -168,7 +170,11 @@ sub get_arguments {
 	$_ = detildefy($_) for grep { defined } @opt{qw/install_base destdir prefix/}, values %{ $opt{install_path} };
 	$opt{config} = ExtUtils::Config->new($opt{config});
 	$opt{meta} = get_meta();
-	$opt{install_paths} = ExtUtils::InstallPaths->new(%opt, dist_name => $opt{meta}->name);
+	my $dofile = rel2abs(catfile(curdir, 'inc', 'build.pl'));
+	my $extra = -e $dofile ? do $dofile : {};
+	%opt = $extra->{expand_opts}->(%opt) if $extra->{expand_opts};
+	$opt{install_paths} ||= ExtUtils::InstallPaths->new(%opt, dist_name => $opt{meta}->name);
+	$opt{extra} = $extra;
 	return %opt;
 }
 
@@ -228,6 +234,8 @@ than 200, yet supports the features needed by most distributions.
 
 =item * Module sharedirs
 
+=item * Extending Module::Build::Tiny
+
 =back
 
 =head2 Not Supported
@@ -237,8 +245,6 @@ than 200, yet supports the features needed by most distributions.
 =item * Dynamic prerequisites
 
 =item * HTML documentation generation
-
-=item * Extending Module::Build::Tiny
 
 =back
 

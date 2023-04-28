@@ -53,6 +53,9 @@ if ($has_compiler) {
 			return "Hello World!\n";
 		}
 		---
+	$dist->add_file('inc/build.pl', undent(<<'		---'));
+		return { before_copy => sub { mkdir "lib/Foo/Bar/"; open my $fh, ">", "lib/Foo/Bar/More.pm" } };
+		---
 }
 
 $dist->regen;
@@ -121,6 +124,9 @@ sub _slurp { do { local (@ARGV,$/)=$_[0]; <> } }
     my $line = <$fh>;
     like( $line, qr{\A$interpreter}, "blib/script/simple has shebang line with \$^X" );
   }
+
+  diag `find blib -type f`;
+  ok( -f 'blib/lib/' . _mod2pm( "$dist->{name}::More"), "$dist->{name}::More copied to blib" );
 
   require blib;
   blib->import;
