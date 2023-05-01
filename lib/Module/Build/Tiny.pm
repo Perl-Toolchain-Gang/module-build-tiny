@@ -61,12 +61,13 @@ sub process_xs {
 	my $version = $options->{meta}->version;
 	require ExtUtils::CBuilder;
 	my $builder = ExtUtils::CBuilder->new(config => $options->{config}->values_set);
-	my @objects = $builder->compile(source => $c_file, defines => { VERSION => qq/"$version"/, XS_VERSION => qq/"$version"/ }, include_dirs => [ curdir, 'include', dirname($source) ]);
+	my @compile_args = (include_dirs => [ curdir, 'include', dirname($source) ], extra_compiler_flags => $options->{extra_compiler_flags});
+	my @objects = $builder->compile(source => $c_file, defines => { VERSION => qq/"$version"/, XS_VERSION => qq/"$version"/ }, @compile_args);
 
 	my $o = $options->{config}->get('_o');
 	for my $c_source (@{ $c_files }) {
 		my $o_file = catfile($tempdir, basename($c_source, '.c') . $o);
-		push @objects, $builder->compile(source => $c_source, include_dirs => [ curdir, 'include', dirname($source) ])
+		push @objects, $builder->compile(source => $c_source, @compile_args);
 	}
 
 	require DynaLoader;
@@ -74,7 +75,7 @@ sub process_xs {
 
 	mkpath($archdir, $options->{verbose}, oct '755') unless -d $archdir;
 	my $lib_file = catfile($archdir, $mod2fname->(\@parts) . '.' . $options->{config}->get('dlext'));
-	return $builder->link(objects => \@objects, lib_file => $lib_file, module_name => join '::', @parts);
+	return $builder->link(objects => \@objects, lib_file => $lib_file, extra_linker_flags => $options->{extra_linker_flags}, module_name => join '::', @parts);
 }
 
 sub find {
@@ -97,6 +98,7 @@ my %actions = (
 			(my $pm = $pl_file) =~ s/\.PL$//;
 			system $^X, $pl_file, $pm and die "$pl_file returned $?\n";
 		}
+		$opt{extra}{before_copy}->(%opt) if $opt{extra}{before_copy};
 		my %modules = map { $_ => catfile('blib', $_) } find(qr/\.pm$/, 'lib');
 		my %docs    = map { $_ => catfile('blib', $_) } find(qr/\.pod$/, 'lib');
 		my %scripts = map { $_ => catfile('blib', $_) } find(qr//, 'script');
@@ -111,6 +113,7 @@ my %actions = (
 			my @c_files = $xs eq $main_xs ? find(qr/\.c$/, 'src') : ();
 			process_xs($xs, \%opt, \@c_files);
 		}
+		$opt{extra}{after_copy}->(%opt) if $opt{extra}{after_copy};
 
 		if ($opt{install_paths}->install_destination('bindoc') && $opt{install_paths}->is_default_installable('bindoc')) {
 			my $section = $opt{config}->get('man1ext');
@@ -161,15 +164,27 @@ my %actions = (
 	},
 );
 
+sub get_arguments {
+	my @sources = @_;
+	my %opt;
+	GetOptionsFromArray($_, \%opt, qw/install_base=s install_path=s% installdirs=s destdir=s prefix=s config=s% uninst:1 verbose:1 dry_run:1 pureperl-only:1 create_packlist=i jobs=i/) for (@sources);
+	$_ = detildefy($_) for grep { defined } @opt{qw/install_base destdir prefix/}, values %{ $opt{install_path} };
+	$opt{config} = ExtUtils::Config->new($opt{config});
+	$opt{meta} = get_meta();
+	my $dofile = rel2abs(catfile(curdir, 'inc', 'build.pl'));
+	my $extra = -e $dofile ? do $dofile : {};
+	%opt = $extra->{expand_opts}->(%opt) if $extra->{expand_opts};
+	$opt{install_paths} ||= ExtUtils::InstallPaths->new(%opt, dist_name => $opt{meta}->name);
+	$opt{extra} = $extra;
+	return %opt;
+}
+
 sub Build {
 	my $action = @ARGV && $ARGV[0] =~ /\A\w+\z/ ? shift @ARGV : 'build';
 	die "No such action '$action'\n" if not $actions{$action};
 	my($env, $bargv) = @{ decode_json(read_file('_build_params')) };
-	my %opt;
-	GetOptionsFromArray($_, \%opt, qw/install_base=s install_path=s% installdirs=s destdir=s prefix=s config=s% uninst:1 verbose:1 dry_run:1 pureperl-only:1 create_packlist=i jobs=i/) for ($env, $bargv, \@ARGV);
-	$_ = detildefy($_) for grep { defined } @opt{qw/install_base destdir prefix/}, values %{ $opt{install_path} };
-	@opt{ 'config', 'meta' } = (ExtUtils::Config->new($opt{config}), get_meta());
-	exit $actions{$action}->(%opt, install_paths => ExtUtils::InstallPaths->new(%opt, dist_name => $opt{meta}->name));
+	my %opt = get_arguments($env, $bargv, \@ARGV);
+	exit $actions{$action}->(%opt);
 }
 
 sub Build_PL {
@@ -220,6 +235,8 @@ than 200, yet supports the features needed by most distributions.
 
 =item * Module sharedirs
 
+=item * Extending Module::Build::Tiny
+
 =back
 
 =head2 Not Supported
@@ -229,8 +246,6 @@ than 200, yet supports the features needed by most distributions.
 =item * Dynamic prerequisites
 
 =item * HTML documentation generation
-
-=item * Extending Module::Build::Tiny
 
 =back
 
