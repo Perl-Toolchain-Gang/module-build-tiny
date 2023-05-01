@@ -180,8 +180,12 @@ sub _gen_default_filedata {
 		"meta-spec": {
 			"url": "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
 			"version": 2
-		}
-	}
+		},
+        "x_dynamic_prereqs": {
+			"version": 1,
+			"expressions": [ { "condition": [ "has_perl", "$]"], "prereqs": { "Bar": 1 } } ]
+        }
+	  }
     ----
 }
 
