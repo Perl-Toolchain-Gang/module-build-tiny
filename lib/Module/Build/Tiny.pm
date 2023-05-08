@@ -61,12 +61,12 @@ sub process_xs {
 	my $version = $options->{meta}->version;
 	require ExtUtils::CBuilder;
 	my $builder = ExtUtils::CBuilder->new(config => $options->{config}->values_set);
-	my @objects = $builder->compile(source => $c_file, defines => { VERSION => qq/"$version"/, XS_VERSION => qq/"$version"/ }, include_dirs => [ curdir, 'include', dirname($source) ]);
+	my @objects = $builder->compile(source => $c_file, defines => { VERSION => qq/"$version"/, XS_VERSION => qq/"$version"/ }, include_dirs => [ curdir, 'include', 'src', dirname($source) ]);
 
 	my $o = $options->{config}->get('_o');
 	for my $c_source (@{ $c_files }) {
 		my $o_file = catfile($tempdir, basename($c_source, '.c') . $o);
-		push @objects, $builder->compile(source => $c_source, include_dirs => [ curdir, 'include', dirname($source) ])
+		push @objects, $builder->compile(source => $c_source, include_dirs => [ curdir, 'include', 'src', dirname($c_source) ])
 	}
 
 	require DynaLoader;
