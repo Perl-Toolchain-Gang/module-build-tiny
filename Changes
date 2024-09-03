@@ -1,6 +1,8 @@
 Revision history for Module::Build::Tiny
 
 {{$NEXT}}
+
+0.049     2024-09-03 19:25:05+02:00 Europe/Brussels
           - Make CPAN::Requirements::Dynamic an optional dependency
 
 0.048     2024-04-28 14:58:04+02:00 Europe/Brussels
