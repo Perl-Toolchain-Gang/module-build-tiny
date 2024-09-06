@@ -51,8 +51,9 @@ sub reset {
   my %options = @_;
 
   $options{name} ||= 'Simple';
+  my %tempargs = $^O eq 'MSWin32' ? (TMPDIR => 1) : (DIR => File::Spec->curdir, CLEANUP => 1);
   $options{dir} ||= File::Spec->rel2abs(File::Temp::tempdir(
-    DIR => File::Spec->curdir, CLEANUP => 1
+    %tempargs,
   ));
 
   my %data = (
