@@ -161,11 +161,14 @@ my %actions = (
 	},
 );
 
+my @options = qw/install_base=s install_path=s% installdirs=s destdir=s prefix=s config=s% uninst:1 verbose:1 dry_run:1 pureperl-only:1 create_packlist=i jobs=i extra_compiler_flags=s extra_linker_flags=s/;
+
 sub get_arguments {
 	my @sources = @_;
 	my %opt;
-	GetOptionsFromArray($_, \%opt, qw/install_base=s install_path=s% installdirs=s destdir=s prefix=s config=s% uninst:1 verbose:1 dry_run:1 pureperl-only:1 create_packlist=i jobs=i/) for (@sources);
+	GetOptionsFromArray($_, \%opt, @options) for @sources;
 	$_ = detildefy($_) for grep { defined } @opt{qw/install_base destdir prefix/}, values %{ $opt{install_path} };
+	$_ = [ split_like_shell($_) ] for grep { defined } @opt{qw/extra_compiler_flags extra_linker_flags/};
 	$opt{config} = ExtUtils::Config->new($opt{config});
 	$opt{meta} = get_meta();
 	$opt{install_paths} = ExtUtils::InstallPaths->new(%opt, dist_name => $opt{meta}->name);
