@@ -176,10 +176,10 @@ sub get_arguments {
 }
 
 sub Build {
-	my $action = @ARGV && $ARGV[0] =~ /\A\w+\z/ ? shift @ARGV : 'build';
-	die "No such action '$action'\n" if not $actions{$action};
 	my($env, $bargv) = @{ decode_json(read_file('_build_params')) };
 	my %opt = get_arguments($env, $bargv, \@ARGV);
+	my $action = @ARGV && $ARGV[0] =~ /\A\w+\z/ ? shift @ARGV : 'build';
+	die "No such action '$action'\n" if not $actions{$action};
 	exit $actions{$action}->(%opt);
 }
 
